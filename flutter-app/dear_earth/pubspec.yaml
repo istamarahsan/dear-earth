@@ -68,16 +68,23 @@ flutter:
     - assets/icons/next.png
     - assets/icons/Logo.png
     - assets/icons/Google.png
+    - assets/icons/notif.png
+    - assets/icons/leaf.png
+    - assets/icons/exp.png
+    - assets/icons/gift.png
 
-    - assets/categories/chips.png
-    - assets/categories/dish.png
-    - assets/categories/pancakes.png
-    - assets/categories/pie.png
-    - assets/categories/salad.png
+    # - assets/categories/chips.png
+    # - assets/categories/dish.png
+    # - assets/categories/pancakes.png
+    # - assets/categories/pie.png
+    # - assets/categories/salad.png
 
     - assets/recomendations/honey-pancake.png
     - assets/recomendations/canai-bread.png
     - assets/recomendations/salad-green.png
+
+    - assets/topics/stop_scrolling.png
+    - assets/header/world.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

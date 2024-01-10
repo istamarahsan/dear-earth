@@ -1,5 +1,6 @@
-// import 'package:dear_earth/pages/home.dart';
+import 'package:dear_earth/pages/home.dart';
 import 'package:dear_earth/pages/login.dart';
+import 'package:dear_earth/pages/chat.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -20,7 +21,9 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Noto Sans'
       ),
       debugShowCheckedModeBanner: false,
-      home: LoginPage(),
+      home: ChatPage(),
+      // home: HomePage(),
+      // home: LoginPage(),
     );
   }
 }
