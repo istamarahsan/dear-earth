@@ -12,7 +12,7 @@ RUN unzip /tmp/pb.zip -d /pb/
 
 COPY ./migrations /pb/pb_migrations
 
-# COPY ./hooks /pb/pb_hooks
+COPY ./hooks /pb/pb_hooks
 
 EXPOSE 8080
 
