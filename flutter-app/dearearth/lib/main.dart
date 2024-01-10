@@ -1,6 +1,6 @@
-import 'package:dear_earth/pages/home.dart';
-import 'package:dear_earth/pages/login.dart';
-import 'package:dear_earth/pages/chat.dart';
+import 'package:dearearth/pages/home.dart';
+import 'package:dearearth/pages/login.dart';
+import 'package:dearearth/pages/chat.dart';
 import 'package:flutter/material.dart';
 
 void main() {

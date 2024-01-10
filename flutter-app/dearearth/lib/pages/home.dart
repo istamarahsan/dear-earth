@@ -1,7 +1,7 @@
 // ignore_for_file: prefer_const_constructors
 
-import 'package:dear_earth/models/popular_topics.dart';
-import 'package:dear_earth/models/progress_bar.dart';
+import 'package:dearearth/models/popular_topics.dart';
+import 'package:dearearth/models/progress_bar.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatelessWidget {
