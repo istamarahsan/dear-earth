@@ -22,9 +22,16 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) => const MaterialApp(
-        home: ChatPage(),
-      );
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      theme: ThemeData(
+        // Set your custom theme here
+        primarySwatch: Colors.green,
+        // Add more customizations if needed
+      ),
+      home: const ChatPage(),
+    );
+  }
 }
 
 class ChatPage extends StatefulWidget {
@@ -247,4 +254,29 @@ class _ChatPageState extends State<ChatPage> {
           user: _user,
         ),
       );
+}
+
+class CustomMessageContainer extends StatelessWidget {
+  const CustomMessageContainer({
+    Key? key,
+    required this.alignment,
+    required this.child,
+  }) : super(key: key);
+
+  final CrossAxisAlignment alignment;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: AlignmentDirectional.bottomEnd,
+      child: Container(
+        margin: const EdgeInsets.all(8),
+        child: Align(
+          alignment: Alignment.center,
+          child: child,
+        ),
+      ),
+    );
+  }
 }
