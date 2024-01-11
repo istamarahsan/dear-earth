@@ -1,13 +1,17 @@
 // import 'package:dear_earth/pages/home.dart';
 import 'package:dearearth/pages/login.dart';
 import 'package:flutter/material.dart';
+import 'package:pocketbase/pocketbase.dart';
 
 void main() {
-  runApp(const MyApp());
+  final pb = PocketBase('http://pbdev.dearearth.app');
+  final app = MyApp(pb: pb);
+  runApp(app);
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final PocketBase pb;
+  const MyApp({super.key, required this.pb});
 
   // This widget is the root of your application.
   @override
@@ -20,7 +24,7 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Noto Sans'
       ),
       debugShowCheckedModeBanner: false,
-      home: LoginPage(),
+      home: LoginPage(pb: pb),
     );
   }
 }

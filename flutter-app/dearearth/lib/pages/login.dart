@@ -1,9 +1,12 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
+import 'package:pocketbase/pocketbase.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
+  final PocketBase pb;
+  const LoginPage({super.key, required this.pb});
 
   @override
   Widget build(BuildContext context) {
@@ -48,9 +51,7 @@ class LoginPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10.0),
                       ),
                     ),
-                    onPressed: () {
-                      // Add button press logic here
-                    },
+                    onPressed: _signInGoogle,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -75,5 +76,15 @@ class LoginPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _signInGoogle() async {
+    final authData =
+        await pb.collection('users').authWithOAuth2('google', (url) async {
+      await launchUrl(url);
+    });
+    if (pb.authStore.isValid) {
+      print(authData);
+    }
   }
 }
