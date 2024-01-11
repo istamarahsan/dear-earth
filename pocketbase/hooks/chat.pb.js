@@ -113,7 +113,6 @@ routerAdd("POST", "/api/dearearth/chat/submit/:id", (ctx) => {
 routerAdd("POST", "/api/dearearth/vertextest", (ctx) => {
     const vertex = require(`${__hooks}/vertex.js`)
     const token = $os.getenv("GCLOUD_ACCESS_TOKEN")
-    $app.logger().info(token)
     const history = 
     [
         {
