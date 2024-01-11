@@ -5,9 +5,10 @@ routerAdd("POST", "/api/dearearth/chat/create", (ctx) => {
     if (user === undefined) {
         return ctx.noContent(400)
     }
-    
-    const tempFixedStarterIdx = 0
-    const starterId = $app.dao().findRecordsByFilter("chat_starters", "", "", 1)[tempFixedStarterIdx].getId()
+
+    const starter = new Record()
+    $app.dao().recordQuery("chat_starters").limit(1).one(starter)
+    const starterId = starter.getId()
     const chats = $app.dao().findCollectionByNameOrId("chats")
     const newChat = new Record(chats, {
         user: user.id,
@@ -21,6 +22,25 @@ routerAdd("POST", "/api/dearearth/chat/create", (ctx) => {
 }, $apis.requireRecordAuth("users"))
 
 routerAdd("POST", "/api/dearearth/chat/respond/:id", (ctx) => {
+    /**
+     * 
+     * @param {{ title: string, content: string }} starter
+     * @param {string} initialUserResponse 
+     */
+    const buildInitialPrompt = ({ title, content }, initialUserResponse) => `
+        You are a chatbot designed to help people increase their climate literacy. 
+        You know a lot about the climate, but mainly what you do is to respond to me and ask relevant questions to encourage me to find out more about the topic and also do some self-reflection about my climate literacy. 
+        If I respond in a way that seems out of topic, just reply with "sorry, I don't understand what you mean".
+        For additional context in giving me information, I live in Indonesia. 
+        We are going to have a chat. 
+        The topic is "${title}". 
+        You just asked me: "${content}". 
+        Here's my response: "${initialUserResponse}"
+    `
+
+    const vertex = require(`${__hooks}/vertex.js`)
+    const gcloudToken = $os.getenv("GCLOUD_ACCESS_TOKEN")
+
     const chatId = ctx.pathParam("id")
     if (chatId === undefined) {
         return ctx.noContent(400)
@@ -31,8 +51,8 @@ routerAdd("POST", "/api/dearearth/chat/respond/:id", (ctx) => {
         return ctx.noContent(400)
     }
 
-    const responseText = $apis.requestInfo(ctx).data.content
-    if (typeof responseText !== "string") {
+    const userResponseText = $apis.requestInfo(ctx).data.content
+    if (typeof userResponseText !== "string") {
         return ctx.noContent(400)
     }
 
@@ -47,8 +67,40 @@ routerAdd("POST", "/api/dearearth/chat/respond/:id", (ctx) => {
     const chatIsNew = chat.expandedAll("history").length === 0
 
     let modelResponse = chatIsNew
-        ? "hey this is Gemini responding for the first time. I just received the full prompt."
-        : "thank you for responding."
+        ? vertex.chat(
+            gcloudToken, 
+            [
+                { 
+                    role: "USER", 
+                    text: buildInitialPrompt(
+                        { 
+                            title: chat.expandedOne("starter").getString("title"), 
+                            content: chat.expandedOne("starter").getString("content") 
+                        },
+                        userResponseText
+                    ) 
+                }
+            ],
+            $http.send,
+            $app.logger()
+        )
+        : vertex.chat(
+            gcloudToken,
+            [
+                ...chat.expandedAll("history")
+                    .sort((a, b) => a.getInt("order") - b.getInt("order"))
+                    .map((history) => ({
+                        role: history.getInt("order") % 2 === 0 ? "MODEL" : "USER",
+                        text: history.getString("content")
+                    })),
+                {
+                    role: "USER",
+                    text: userResponseText
+                }
+            ],
+            $http.send,
+            $app.logger()
+        )
 
     const histories = $app.dao().findCollectionByNameOrId("chat_histories")
     const latestHistoryOrder = chat.expandedAll("history")
@@ -57,7 +109,7 @@ routerAdd("POST", "/api/dearearth/chat/respond/:id", (ctx) => {
 
     const userResponseHistory = new Record(histories, {
         order: latestHistoryOrder + 1,
-        content: responseText
+        content: userResponseText
     })
 
     const modelResponseHistory = new Record(histories, {
@@ -76,6 +128,7 @@ routerAdd("POST", "/api/dearearth/chat/respond/:id", (ctx) => {
     })
 }, $apis.requireRecordAuth("users"))
 
+// TODO: analyze submission
 routerAdd("POST", "/api/dearearth/chat/submit/:id", (ctx) => {
     const chatId = ctx.pathParam("id")
     if (chatId === undefined) {
@@ -94,7 +147,7 @@ routerAdd("POST", "/api/dearearth/chat/submit/:id", (ctx) => {
 
     const chat = $app.dao().findRecordById("chats", chatId)
     $app.dao().expandRecord(chat, ["user"], null)
-    
+
     if (chat.expandedOne("user").getId() !== user.id) {
         return ctx.noContent(401)
     }
@@ -109,25 +162,3 @@ routerAdd("POST", "/api/dearearth/chat/submit/:id", (ctx) => {
 
     return ctx.noContent(200)
 }, $apis.requireRecordAuth("users"))
-
-routerAdd("POST", "/api/dearearth/vertextest", (ctx) => {
-    const vertex = require(`${__hooks}/vertex.js`)
-    const token = $os.getenv("GCLOUD_ACCESS_TOKEN")
-    const history = 
-    [
-        {
-            "role": "USER",
-            "text": `
-                You are a chatbot designed to help people increase their climate literacy. 
-                You know a lot about the climate, but mainly what you do is to respond to me and ask relevant questions to encourage me to find out more about the topic and also do some self-reflection about my climate literacy. 
-                For context in giving me information, I live in Indonesia. 
-                We are going to have a chat. 
-                The topic is "saving energy: energy vampires". 
-                You just asked me: "how often do you forget to unplug your unused devices?". 
-                Here's my response: "Well, I don't really think about unplugging my devices too much.
-            `
-        }
-    ]
-    const answer = vertex.chat(token, history, $http.send)
-    return ctx.json(200, answer)
-})
