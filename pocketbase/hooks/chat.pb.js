@@ -109,3 +109,26 @@ routerAdd("POST", "/api/dearearth/chat/submit/:id", (ctx) => {
 
     return ctx.noContent(200)
 }, $apis.requireRecordAuth("users"))
+
+routerAdd("POST", "/api/dearearth/vertextest", (ctx) => {
+    const vertex = require(`${__hooks}/vertex.js`)
+    const token = $os.getenv("GCLOUD_ACCESS_TOKEN")
+    $app.logger().info(token)
+    const history = 
+    [
+        {
+            "role": "USER",
+            "text": `
+                You are a chatbot designed to help people increase their climate literacy. 
+                You know a lot about the climate, but mainly what you do is to respond to me and ask relevant questions to encourage me to find out more about the topic and also do some self-reflection about my climate literacy. 
+                For context in giving me information, I live in Indonesia. 
+                We are going to have a chat. 
+                The topic is "saving energy: energy vampires". 
+                You just asked me: "how often do you forget to unplug your unused devices?". 
+                Here's my response: "Well, I don't really think about unplugging my devices too much.
+            `
+        }
+    ]
+    const answer = vertex.chat(token, history, $http.send)
+    return ctx.json(200, answer)
+})
