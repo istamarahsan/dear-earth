@@ -8,6 +8,19 @@ This repository is a monorepo containing a Flutter app and a [PocketBase](https:
 
 ### Flutter app
 
+You will need to have Flutter installed on your computer.
+
+```bash
+# flutter app directory
+cd flutter-app/dearearth
+
+# dependencies
+flutter pub get
+
+# run the app
+flutter run
+```
+
 ### PocketBase
 
 PocketBase is used as the backend. The `pocketbase` directory contains migrations, hooks and a Dockerfile. In addition, there is a `docker-compose.yaml` file for running locally.
