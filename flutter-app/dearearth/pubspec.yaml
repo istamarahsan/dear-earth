@@ -84,20 +84,30 @@ flutter:
     - assets/icons/exp.png
     - assets/icons/exp_white.png
     - assets/icons/gift.png
-
-    # - assets/categories/chips.png
-    # - assets/categories/dish.png
-    # - assets/categories/pancakes.png
-    # - assets/categories/pie.png
-    # - assets/categories/salad.png
-
-    - assets/recomendations/honey-pancake.png
-    - assets/recomendations/canai-bread.png
-    - assets/recomendations/salad-green.png
+    - assets/icons/profile.png
+    - assets/icons/compas.png
+    - assets/icons/evaluate.png
+    - assets/icons/journal.png
 
     - assets/topics/stop_scrolling.png
+
     - assets/header/world.png
+
     - assets/profile/ai.png
+
+    - assets/makers/1.png
+    - assets/makers/2.png
+    - assets/makers/3.png
+
+    - assets/impacts/1.png
+    - assets/impacts/2.png
+    - assets/impacts/3.png
+    - assets/impacts/4.png
+
+    - assets/shops/Bamboo Straw Set.png
+    - assets/shops/Iphone Case.png
+    - assets/shops/Sling Bag.png
+    - assets/shops/Travel Backpack.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

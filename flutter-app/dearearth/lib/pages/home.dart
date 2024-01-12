@@ -1,22 +1,40 @@
 // ignore_for_file: prefer_const_constructors
+import 'dart:convert';
+
 import 'package:dearearth/pages/chat.dart';
 import 'package:dearearth/models/popular_topics.dart';
 import 'package:dearearth/models/progress_bar.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:pocketbase/pocketbase.dart';
 
-class HomePage extends StatelessWidget {
-  HomePage({super.key});
+class HomePage extends StatefulWidget {
+  final PocketBase pb;
+  const HomePage({super.key, required this.pb});
 
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
   List<PopularTopics> topics = [];
+  String? chatId;
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  void __getInitialInfo() {
+  @override
+  void initState() {
+    super.initState();
     topics = PopularTopics.getTopics();
+    widget.pb.collection("chats")
+      .getFullList()
+      .then((list) => list.firstOrNull)
+      .then((value) => setState(() { chatId = value?.id; }));
   }
 
   @override
   Widget build(BuildContext context) {
-    __getInitialInfo();
     return Scaffold(
       key: _scaffoldKey,
       appBar: _appBar(),
@@ -176,17 +194,28 @@ class HomePage extends StatelessWidget {
             children: [
               TextButton(
                 onPressed: () async {
-                  Navigator.pushReplacement(
+                  if (chatId == null) {
+                    http.post(
+                      widget.pb.buildUrl("/api/dearearth/chat/create"), 
+                      headers: {
+                        "Authorization": "Bearer ${widget.pb.authStore.token}"
+                      })
+                      .then((response) => setState(() {
+                        chatId = jsonDecode(response.body)["id"];
+                      }));
+                  } if (chatId != null) {
+                    Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => ChatPage()),
+                    MaterialPageRoute(builder: (context) => ChatPage(pb: widget.pb, chatId: chatId!)),
                   );
+                  }
                 },
                 style: TextButton.styleFrom(
                   foregroundColor: Colors.white,
                   padding: EdgeInsets.only(left: 15, right: 15),
                   backgroundColor: Color(0xff48672F),
                 ),
-                child: Text('Interact'),
+                child: Text(chatId != null ? 'Continue' : 'Interact'),
               ),
             ],
           ),
@@ -287,9 +316,9 @@ class HomePage extends StatelessWidget {
       title: Padding(
         padding: const EdgeInsets.only(left: 8),
         child: Text(
-          'Interactive Journal',
+          'Magic Journal 🍃✨',
           style: TextStyle(
-              color: Colors.black, fontSize: 18, fontWeight: FontWeight.w600),
+              color: Color(0xff174A41), fontSize: 22, fontWeight: FontWeight.w600),
         ),
       ),
       backgroundColor: Colors.white,

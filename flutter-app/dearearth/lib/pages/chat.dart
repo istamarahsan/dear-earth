@@ -14,47 +14,30 @@ import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
+import 'package:dearearth/main.dart';
 import 'package:dearearth/pages/home.dart';
-
-void main() {
-  initializeDateFormatting().then((_) => runApp(const MyApp()));
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(
-        // Set your custom theme here
-        primarySwatch: Colors.green,
-        // Add more customizations if needed
-      ),
-      home: const ChatPage(),
-    );
-  }
-}
+import 'package:pocketbase/pocketbase.dart';
 
 class ChatPage extends StatefulWidget {
-  const ChatPage({super.key});
+  final PocketBase pb;
+  final String chatId;
+  const ChatPage({super.key, required this.pb, required this.chatId});
 
   @override
   State<ChatPage> createState() => _ChatPageState();
 }
 
 class _ChatPageState extends State<ChatPage> {
+  types.User modelUser = const types.User(id: "model");
+  types.User currentUser = const types.User(id: "user");
   List<types.Message> _messages = [];
-  final _user = const types.User(
-    id: '82091008-a484-4a89-ae75-a22bf8d6f3ac',
-  );
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    _loadMessages();
+    _fetchAndLoadChatHistory();
   }
 
   void _addMessage(types.Message message) {
@@ -63,56 +46,77 @@ class _ChatPageState extends State<ChatPage> {
     });
   }
 
+  void _fetchAndLoadChatHistory() async {
+    final chatRecord = await widget.pb
+        .collection('chats')
+        .getOne(widget.chatId, expand: 'starter,history');
+    final starterRecord = chatRecord.expand["starter"]![0];
+    final chatHistoryRecords = chatRecord.expand["history"] ?? [];
+    chatHistoryRecords.sort(
+        (a, b) => a.getIntValue("order").compareTo(b.getIntValue("order")));
+
+    final starterMessage = types.TextMessage(
+        id: starterRecord.id,
+        author: modelUser,
+        createdAt: DateTime.parse(chatRecord.created).millisecondsSinceEpoch,
+        text: starterRecord.getStringValue("content"));
+    final chatHistoryMessages = chatHistoryRecords.map((it) =>
+        types.TextMessage(
+            id: it.id,
+            author: it.getIntValue("order") % 2 == 0 ? modelUser : currentUser,
+            createdAt: DateTime.parse(it.created).millisecondsSinceEpoch,
+            text: it.getStringValue("content")));
+    setState(() {
+      _messages.clear();
+      _messages.insertAll(0, [starterMessage, ...chatHistoryMessages].reversed.toList());
+    });
+  }
+
   void _handleAttachmentPressed() {
-  showModalBottomSheet<void>(
-    context: context,
-    builder: (BuildContext context) => SafeArea(
-      child: SizedBox(
-        height: 144,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                _handleImageSelection();
-              },
-              child: const Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: Text('Photo'),
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (BuildContext context) => SafeArea(
+        child: SizedBox(
+          height: 144,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _handleImageSelection();
+                },
+                child: const Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: Text('Photo'),
+                ),
               ),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                _handleFileSelection();
-              },
-              child: const Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: Text('File'),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _handleFileSelection();
+                },
+                child: const Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: Text('File'),
+                ),
               ),
-            ),
-            TextButton(
-              onPressed: () {// Contoh: Menghapus SnackBar sebelum pindah
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ChatPage(),
-                  ),
-                );
-              },
-              child: const Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: Text('Cancel'),
+              TextButton(
+                onPressed: () {
+                  // Contoh: Menghapus SnackBar sebelum pindah
+                  Navigator.pop(context);
+                },
+                child: const Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: Text('Cancel'),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
-
+    );
+  }
 
   void _handleFileSelection() async {
     final result = await FilePicker.platform.pickFiles(
@@ -121,7 +125,7 @@ class _ChatPageState extends State<ChatPage> {
 
     if (result != null && result.files.single.path != null) {
       final message = types.FileMessage(
-        author: _user,
+        author: currentUser,
         createdAt: DateTime.now().millisecondsSinceEpoch,
         id: const Uuid().v4(),
         mimeType: lookupMimeType(result.files.single.path!),
@@ -146,7 +150,7 @@ class _ChatPageState extends State<ChatPage> {
       final image = await decodeImageFromList(bytes);
 
       final message = types.ImageMessage(
-        author: _user,
+        author: currentUser,
         createdAt: DateTime.now().millisecondsSinceEpoch,
         height: image.height.toDouble(),
         id: const Uuid().v4(),
@@ -219,33 +223,39 @@ class _ChatPageState extends State<ChatPage> {
     });
   }
 
-  void _handleSendPressed(types.PartialText message) {
+  void _handleSendPressed(types.PartialText message) async {
     final userMessage = message.text;
 
     // Add user message
     final userTextMessage = types.TextMessage(
-      author: _user,
+      author: currentUser,
       createdAt: DateTime.now().millisecondsSinceEpoch,
       id: const Uuid().v4(),
       text: userMessage,
     );
     _addMessage(userTextMessage);
 
-    // Simulate receiver's response
-    final receiverResponse = "$userMessage";
-    final receiverTextMessage = types.TextMessage(
-      author: const types.User(id: 'receiver_user'),
-      createdAt: DateTime.now().millisecondsSinceEpoch + 1,
-      id: const Uuid().v4(),
-      text: receiverResponse,
-    );
-    _addMessage(receiverTextMessage);
+    final endpoint =
+        widget.pb.buildUrl("/api/dearearth/chat/respond/${widget.chatId}");
+    final response = await http.post(endpoint,
+        headers: {
+          "Authorization": "Bearer ${widget.pb.authStore.token}",
+          "Content-Type": "application/json"
+        },
+        body: jsonEncode({"content": message.text}));
+    if (response.statusCode != HttpStatus.ok) {
+      print("error: ${response.toString()}");
+      return;
+    }
+    final responseText = jsonDecode(response.body)["content"];
+    _addMessage(types.TextMessage(
+        author: modelUser, id: const Uuid().v4(), text: responseText));
   }
 
   void _loadMessages() async {
     // Add a hello message when the user enters the chat page
     final helloMessage = types.TextMessage(
-      author: const types.User(id: 'system_user'),
+      author: const types.User(id: 'systemcurrentUser'),
       createdAt: DateTime.now().millisecondsSinceEpoch,
       id: const Uuid().v4(),
       text: 'Hello! Welcome to the chat!',
@@ -279,7 +289,7 @@ class _ChatPageState extends State<ChatPage> {
             onSendPressed: _handleSendPressed,
             showUserAvatars: true,
             showUserNames: true,
-            user: _user,
+            user: currentUser,
           ),
         ),
       );
@@ -381,11 +391,14 @@ AppBar _appBar(BuildContext context) {
     leading: IconButton(
       icon: Icon(Icons.arrow_back),
       onPressed: () {
+        PocketBase pb = PocketBase('http://pbdev.dearearth.app');
         // Navigate to the homepage when the back arrow is pressed
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => HomePage(),
+            builder: (context) => MyApp(
+              pb: pb,
+            ),
           ),
         );
       },

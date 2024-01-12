@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-class ExplorePage extends StatelessWidget {
+class NotFoundPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
       child: Text(
-        'Explore Page',
+        'Not Found Page',
         style: TextStyle(fontSize: 20),
       ),
     );
