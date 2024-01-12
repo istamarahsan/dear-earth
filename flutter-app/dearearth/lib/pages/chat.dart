@@ -14,30 +14,12 @@ import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
+import 'package:dearearth/main.dart';
 import 'package:dearearth/pages/home.dart';
-
-void main() {
-  initializeDateFormatting().then((_) => runApp(const MyApp()));
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(
-        // Set your custom theme here
-        primarySwatch: Colors.green,
-        // Add more customizations if needed
-      ),
-      home: const ChatPage(),
-    );
-  }
-}
+import 'package:pocketbase/pocketbase.dart';
 
 class ChatPage extends StatefulWidget {
-  const ChatPage({super.key});
+  ChatPage({super.key});
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -94,12 +76,7 @@ class _ChatPageState extends State<ChatPage> {
             ),
             TextButton(
               onPressed: () {// Contoh: Menghapus SnackBar sebelum pindah
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ChatPage(),
-                  ),
-                );
+                Navigator.pop(context);
               },
               child: const Align(
                 alignment: AlignmentDirectional.centerStart,
@@ -381,11 +358,12 @@ AppBar _appBar(BuildContext context) {
     leading: IconButton(
       icon: Icon(Icons.arrow_back),
       onPressed: () {
+        PocketBase pb = PocketBase('http://pbdev.dearearth.app');
         // Navigate to the homepage when the back arrow is pressed
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => HomePage(),
+            builder: (context) => MyApp(pb: pb,),
           ),
         );
       },

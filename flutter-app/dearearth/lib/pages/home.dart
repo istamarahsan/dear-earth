@@ -5,7 +5,6 @@ import 'package:dearearth/models/progress_bar.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatelessWidget {
-  HomePage({super.key});
 
   List<PopularTopics> topics = [];
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -287,9 +286,9 @@ class HomePage extends StatelessWidget {
       title: Padding(
         padding: const EdgeInsets.only(left: 8),
         child: Text(
-          'Interactive Journal',
+          'Magic Journal 🍃✨',
           style: TextStyle(
-              color: Colors.black, fontSize: 18, fontWeight: FontWeight.w600),
+              color: Color(0xff174A41), fontSize: 22, fontWeight: FontWeight.w600),
         ),
       ),
       backgroundColor: Colors.white,
