@@ -50,7 +50,6 @@ class _ChatPageState extends State<ChatPage> {
   );
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  SnackBar? _currentSnackBar;
 
   @override
   void initState() {
