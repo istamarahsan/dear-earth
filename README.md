@@ -2,8 +2,6 @@
 
 Climate literacy journaling, supercharged with LLMs.
 
-## Gallery
-
 ## Getting Started
 
 This repository is a monorepo containing a Flutter app and a [PocketBase](https://github.com/pocketbase/pocketbase) configuration.
@@ -30,3 +28,9 @@ docker compose up --build
 - **Hacker:** Ahsan Imam Istamar (istamarahsan@gmail.com)
 
 *created for GDSC HackFest 2024*
+
+## Gallery
+
+![](gallery/Screenshot_1705070418.png)
+![](gallery/Screenshot_1705070496.png)
+![](gallery/Screenshot_1705071408.png) 
