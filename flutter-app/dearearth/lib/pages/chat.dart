@@ -14,6 +14,8 @@ import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
+import 'package:dearearth/pages/home.dart';
+
 void main() {
   initializeDateFormatting().then((_) => runApp(const MyApp()));
 }
@@ -47,6 +49,8 @@ class _ChatPageState extends State<ChatPage> {
     id: '82091008-a484-4a89-ae75-a22bf8d6f3ac',
   );
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   void initState() {
     super.initState();
@@ -60,47 +64,55 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void _handleAttachmentPressed() {
-    showModalBottomSheet<void>(
-      context: context,
-      builder: (BuildContext context) => SafeArea(
-        child: SizedBox(
-          height: 144,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  _handleImageSelection();
-                },
-                child: const Align(
-                  alignment: AlignmentDirectional.centerStart,
-                  child: Text('Photo'),
-                ),
+  showModalBottomSheet<void>(
+    context: context,
+    builder: (BuildContext context) => SafeArea(
+      child: SizedBox(
+        height: 144,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _handleImageSelection();
+              },
+              child: const Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: Text('Photo'),
               ),
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  _handleFileSelection();
-                },
-                child: const Align(
-                  alignment: AlignmentDirectional.centerStart,
-                  child: Text('File'),
-                ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _handleFileSelection();
+              },
+              child: const Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: Text('File'),
               ),
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Align(
-                  alignment: AlignmentDirectional.centerStart,
-                  child: Text('Cancel'),
-                ),
+            ),
+            TextButton(
+              onPressed: () {// Contoh: Menghapus SnackBar sebelum pindah
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChatPage(),
+                  ),
+                );
+              },
+              child: const Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: Text('Cancel'),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   void _handleFileSelection() async {
     final result = await FilePicker.platform.pickFiles(
@@ -219,39 +231,56 @@ class _ChatPageState extends State<ChatPage> {
     );
     _addMessage(userTextMessage);
 
-    // Simulate receiver's response (echo the same message)
+    // Simulate receiver's response
+    final receiverResponse = "$userMessage";
     final receiverTextMessage = types.TextMessage(
       author: const types.User(id: 'receiver_user'),
-      createdAt: DateTime.now().millisecondsSinceEpoch +
-          1, // Ensure a slight time difference
+      createdAt: DateTime.now().millisecondsSinceEpoch + 1,
       id: const Uuid().v4(),
-      text: userMessage,
+      text: receiverResponse,
     );
     _addMessage(receiverTextMessage);
   }
 
   void _loadMessages() async {
+    // Add a hello message when the user enters the chat page
+    final helloMessage = types.TextMessage(
+      author: const types.User(id: 'system_user'),
+      createdAt: DateTime.now().millisecondsSinceEpoch,
+      id: const Uuid().v4(),
+      text: 'Hello! Welcome to the chat!',
+    );
+
+    setState(() {
+      _messages = [helloMessage];
+    });
+
+    // Load messages from the JSON file
     final response = await rootBundle.loadString('assets/messages.json');
     final messages = (jsonDecode(response) as List)
         .map((e) => types.Message.fromJson(e as Map<String, dynamic>))
         .toList();
 
     setState(() {
-      _messages = messages;
+      _messages.addAll(messages);
     });
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        body: Chat(
-          messages: _messages,
-          onAttachmentPressed: _handleAttachmentPressed,
-          onMessageTap: _handleMessageTap,
-          onPreviewDataFetched: _handlePreviewDataFetched,
-          onSendPressed: _handleSendPressed,
-          showUserAvatars: true,
-          showUserNames: true,
-          user: _user,
+  Widget build(BuildContext context) => Material(
+        child: Scaffold(
+          key: _scaffoldKey,
+          appBar: _appBar(context),
+          body: Chat(
+            messages: _messages,
+            onAttachmentPressed: _handleAttachmentPressed,
+            onMessageTap: _handleMessageTap,
+            onPreviewDataFetched: _handlePreviewDataFetched,
+            onSendPressed: _handleSendPressed,
+            showUserAvatars: true,
+            showUserNames: true,
+            user: _user,
+          ),
         ),
       );
 }
@@ -279,4 +308,121 @@ class CustomMessageContainer extends StatelessWidget {
       ),
     );
   }
+}
+
+AppBar _appBar(BuildContext context) {
+  return AppBar(
+    title: Padding(
+      padding: const EdgeInsets.only(left: 0),
+      child: Row(
+        children: [
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              Text(
+                'JAN\n',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xff48672f),
+                ),
+              ),
+              Positioned(
+                top: 14, // Adjust this value as needed
+                child: Text(
+                  '07',
+                  style: TextStyle(
+                    fontSize: 20, // Set a different font size for '07'
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xff48672f),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(
+            width: 10,
+          ),
+          Container(
+            width: 2,
+            height: 38,
+            decoration: BoxDecoration(color: Color(0xff48672f)),
+          ),
+          SizedBox(
+            width: 10,
+          ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Dear Earth, I will",
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w300,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+              Text(
+                "Unplug it Now!",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    ),
+    backgroundColor: Colors.white,
+    elevation: 0.0,
+    centerTitle: false,
+    leading: IconButton(
+      icon: Icon(Icons.arrow_back),
+      onPressed: () {
+        // Navigate to the homepage when the back arrow is pressed
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HomePage(),
+          ),
+        );
+      },
+    ),
+    actions: [
+      GestureDetector(
+        onTap: () {},
+        child: Container(
+          alignment: Alignment.center,
+          margin: EdgeInsets.only(right: 20, top: 10, bottom: 10),
+          padding: EdgeInsets.only(right: 15, top: 8, bottom: 8, left: 15),
+          decoration: BoxDecoration(
+              color: Color(0xff48672f),
+              borderRadius: BorderRadius.circular(40)),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Image.asset(
+                'assets/icons/exp_white.png',
+                height: 20,
+                width: 20,
+              ),
+              SizedBox(
+                width: 5,
+              ),
+              Text(
+                '595 xp',
+                style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white),
+              )
+            ],
+          ),
+        ),
+      ),
+    ],
+  );
 }
