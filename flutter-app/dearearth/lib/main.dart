@@ -1,17 +1,14 @@
-// import 'package:dear_earth/pages/home.dart';
+import 'package:dearearth/pages/home.dart';
 import 'package:dearearth/pages/login.dart';
+import 'package:dearearth/pages/chat.dart';
 import 'package:flutter/material.dart';
-import 'package:pocketbase/pocketbase.dart';
 
 void main() {
-  final pb = PocketBase('http://pbdev.dearearth.app');
-  final app = MyApp(pb: pb);
-  runApp(app);
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  final PocketBase pb;
-  const MyApp({super.key, required this.pb});
+  const MyApp({super.key});
 
   // This widget is the root of your application.
   @override
@@ -19,12 +16,14 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
         useMaterial3: true,
         fontFamily: 'Noto Sans'
       ),
       debugShowCheckedModeBanner: false,
-      home: LoginPage(pb: pb),
+      home: ChatPage(),
+      // home: HomePage(),
+      // home: LoginPage(),
     );
   }
 }
