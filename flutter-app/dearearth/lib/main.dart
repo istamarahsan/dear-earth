@@ -32,7 +32,7 @@ class _MyAppState extends State<MyApp> {
       setState(() {});
     });
     _pages = [
-      HomePage(),
+      HomePage(pb: widget.pb),
       EvaluatePage(),
       ExplorePage(),
       ProfilePage(pb: widget.pb)
