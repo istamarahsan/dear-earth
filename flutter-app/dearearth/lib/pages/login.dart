@@ -1,5 +1,5 @@
 // ignore_for_file: prefer_const_constructors
-
+import 'package:dearearth/pages/home.dart';
 import 'package:flutter/material.dart';
 import 'package:pocketbase/pocketbase.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -51,7 +51,21 @@ class LoginPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10.0),
                       ),
                     ),
-                    onPressed: _signInGoogle,
+                    onPressed: () async {
+                      final authData = await pb
+                          .collection('users')
+                          .authWithOAuth2('google', (url) async {
+                        await launchUrl(url);
+                      });
+                      if (pb.authStore.isValid) {
+                        print(authData);
+
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => HomePage()),
+                        );
+                      }
+                    },
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -76,15 +90,5 @@ class LoginPage extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  void _signInGoogle() async {
-    final authData =
-        await pb.collection('users').authWithOAuth2('google', (url) async {
-      await launchUrl(url);
-    });
-    if (pb.authStore.isValid) {
-      print(authData);
-    }
   }
 }

@@ -1,5 +1,5 @@
 // ignore_for_file: prefer_const_constructors
-
+import 'package:dearearth/pages/chat.dart';
 import 'package:dearearth/models/popular_topics.dart';
 import 'package:dearearth/models/progress_bar.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +8,7 @@ class HomePage extends StatelessWidget {
   HomePage({super.key});
 
   List<PopularTopics> topics = [];
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   void __getInitialInfo() {
     topics = PopularTopics.getTopics();
@@ -17,6 +18,7 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     __getInitialInfo();
     return Scaffold(
+      key: _scaffoldKey,
       appBar: _appBar(),
       backgroundColor: Colors.white,
       body: ListView(
@@ -28,7 +30,7 @@ class HomePage extends StatelessWidget {
           SizedBox(
             height: 30,
           ),
-          _headerSection(),
+          _headerSection(context),
           SizedBox(
             height: 30,
           ),
@@ -126,68 +128,70 @@ class HomePage extends StatelessWidget {
     ]);
   }
 
-  Container _headerSection() {
+  Container _headerSection(BuildContext context) {
     return Container(
       margin: EdgeInsets.only(left: 25, right: 25),
       padding: EdgeInsets.all(25),
       decoration: BoxDecoration(
-          color: Color(0xffF9FAEF), borderRadius: BorderRadius.circular(15)),
-      child: Column(children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'JAN 7, 2024',
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-            Image.asset('assets/header/world.png')
-          ],
-        ),
-        SizedBox(
-          height: 15,
-        ),
-        Row(
-          children: [
-            Flexible(
-                child: Text('Write today’s love letter',
-                    style:
-                        TextStyle(fontWeight: FontWeight.w700, fontSize: 24)))
-          ],
-        ),
-        SizedBox(
-          height: 15,
-        ),
-        Row(
-          children: [
-            Flexible(
-              child: Text(
-                'Love the Earth, learn anything about the Earth. Express your commitment',
+        color: Color(0xffF9FAEF),
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Column(
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'JAN 7, 2024',
                 style: TextStyle(fontWeight: FontWeight.w600),
               ),
-            ),
-          ],
-        ),
-        SizedBox(
-          height: 15,
-        ),
-        Row(
-          children: [
-            TextButton(
-              onPressed: () {
-                // Add your button click logic here
-              },
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.only(left: 15, right: 15),
-                backgroundColor:
-                    Color(0xff48672F), // Set your custom color here
+              Image.asset('assets/header/world.png')
+            ],
+          ),
+          SizedBox(height: 15),
+          Row(
+            children: [
+              Flexible(
+                child: Text(
+                  'Write today’s love letter',
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 24),
+                ),
               ),
-              child: Text('Interact'),
-            ),
-          ],
-        )
-      ]),
+            ],
+          ),
+          SizedBox(height: 15),
+          Row(
+            children: [
+              Flexible(
+                child: Text(
+                  'Love the Earth, learn anything about the Earth. Express your commitment',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 15),
+          Row(
+            children: [
+              TextButton(
+                onPressed: () async {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => ChatPage()),
+                  );
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.only(left: 15, right: 15),
+                  backgroundColor: Color(0xff48672F),
+                ),
+                child: Text('Interact'),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -254,7 +258,8 @@ class HomePage extends StatelessWidget {
                 // Progress bar
                 Container(
                   padding: EdgeInsets.all(0),
-                  child: buildProgressBar(50),
+                  child: buildProgressBar(
+                      50, BoxConstraints(minWidth: 150.0, maxWidth: 160.0)),
                 ),
 
                 // Background image
