@@ -119,34 +119,26 @@ class _MyAppState extends State<MyApp> {
                 label: 'Journal',
               ),
               NavigationDestination(
-                icon: Badge(
-                  child: Image.asset(
-                    'assets/icons/evaluate.png',
-                    height: 24,
-                    width: 24,
-                  ),
+                icon: Image.asset(
+                  'assets/icons/evaluate.png',
+                  height: 24,
+                  width: 24,
                 ),
                 label: 'Evaluate',
               ),
               NavigationDestination(
-                icon: Badge(
-                  label: Text('2'),
-                  child: Image.asset(
-                    'assets/icons/compas.png',
-                    height: 24,
-                    width: 24,
-                  ),
+                icon: Image.asset(
+                  'assets/icons/compas.png',
+                  height: 24,
+                  width: 24,
                 ),
                 label: 'Explore',
               ),
               NavigationDestination(
-                icon: Badge(
-                  label: Text('3'),
-                  child: Image.asset(
-                    'assets/icons/profile.png',
-                    height: 24,
-                    width: 24,
-                  ),
+                icon: Image.asset(
+                  'assets/icons/profile.png',
+                  height: 24,
+                  width: 24,
                 ),
                 label: 'Profile',
               ),
