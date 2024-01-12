@@ -28,19 +28,20 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    widget.pb.authStore.onChange.listen((_) { 
+      setState(() {});
+    });
     _pages = [
-      // HomePage(),
-      // nanti yang dipakai ini
-      if (isLoggedIn()) HomePage() else LoginPage(pb: widget.pb),
+      HomePage(),
       EvaluatePage(),
       ExplorePage(),
-      ProfilePage(pb: widget.pb), // Access widget.pb here
+      ProfilePage(pb: widget.pb)
     ];
   }
 
   bool isLoggedIn() {
     return widget.pb.authStore
-        .isValid; // Replace with the actual method to check authentication
+        .isValid;
   }
 
   @override
@@ -53,7 +54,6 @@ class _MyAppState extends State<MyApp> {
           fontFamily: 'Noto Sans',
         ),
         debugShowCheckedModeBanner: false,
-        // nanti ini yang dipakai
         home: isLoggedIn()
             ? Scaffold(
                 body: _pages[_currentIndex],

@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 class LoginPage extends StatelessWidget {
   final PocketBase pb;
+  
   const LoginPage({super.key, required this.pb});
 
   @override
@@ -59,11 +60,6 @@ class LoginPage extends StatelessWidget {
                       });
                       if (pb.authStore.isValid) {
                         print(authData);
-
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => HomePage()),
-                        );
                       }
                     },
                     child: Row(
