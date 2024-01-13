@@ -21,7 +21,7 @@ class ExploreShops {
     shops.add(ExploreShops(
       name: 'iPhone Case',
       description: 'Pela Case',
-      iconPath: 'assets/shops/iPhone Case.png',
+      iconPath: 'assets/shops/Iphone_Case.png',
       price: 'Rp200.000',
       exp: '700',
     ));

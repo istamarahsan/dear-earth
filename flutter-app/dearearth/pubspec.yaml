@@ -77,6 +77,7 @@ flutter:
     - assets/icons/user.png
     - assets/icons/two-dots.png
     - assets/icons/next.png
+    - assets/icons/next_bordered.png
     - assets/icons/Logo.png
     - assets/icons/Google.png
     - assets/icons/notif.png
@@ -94,6 +95,8 @@ flutter:
     - assets/header/world.png
 
     - assets/profile/ai.png
+    - assets/profile/settings.png
+    - assets/profile/bg.png
 
     - assets/makers/1.png
     - assets/makers/2.png
@@ -105,9 +108,22 @@ flutter:
     - assets/impacts/4.png
 
     - assets/shops/Bamboo Straw Set.png
-    - assets/shops/Iphone Case.png
+    - assets/shops/Iphone_Case.png
     - assets/shops/Sling Bag.png
     - assets/shops/Travel Backpack.png
+
+    - assets/carbons/status.png
+
+    - assets/recomendations/Avoid Single-Use Items.png
+    - assets/recomendations/Cut Red Meat.png
+    - assets/recomendations/Stream at lower resolution.png
+    - assets/recomendations/Shorten Showers.png
+    - assets/recomendations/Reduce Driving.png
+
+    - assets/journeys/Delete Emails.png
+    - assets/journeys/Stop Scrolling.png
+    - assets/journeys/Unplug it Now!.png
+
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

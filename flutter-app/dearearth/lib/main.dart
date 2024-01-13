@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:dearearth/pages/home.dart';
 import 'package:dearearth/pages/login.dart';
-import 'package:dearearth/pages/evaluate.dart';
 import 'package:dearearth/pages/explore.dart';
+import 'package:dearearth/pages/evaluate.dart';
 import 'package:dearearth/pages/profile.dart';
 import 'package:dearearth/models/menu_bar.dart';
 import 'package:pocketbase/pocketbase.dart';
@@ -28,7 +28,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    widget.pb.authStore.onChange.listen((_) { 
+    widget.pb.authStore.onChange.listen((_) {
       setState(() {});
     });
     _pages = [
@@ -40,8 +40,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   bool isLoggedIn() {
-    return widget.pb.authStore
-        .isValid;
+    return widget.pb.authStore.isValid;
   }
 
   @override
@@ -54,105 +53,59 @@ class _MyAppState extends State<MyApp> {
           fontFamily: 'Noto Sans',
         ),
         debugShowCheckedModeBanner: false,
-        home: isLoggedIn()
-            ? Scaffold(
+        home: !isLoggedIn()
+            ? LoginPage(pb: widget.pb)
+            : Scaffold(
                 body: _pages[_currentIndex],
                 bottomNavigationBar: NavigationBar(
+                  backgroundColor: Colors.white,
                   onDestinationSelected: (int index) {
                     setState(() {
                       _currentIndex = index;
                     });
                   },
-                  indicatorColor: Colors.amber,
+                  indicatorColor: Color(0xffDAE7C9),
                   selectedIndex: _currentIndex,
-                  destinations: const <Widget>[
+                  destinations: <Widget>[
                     NavigationDestination(
-                      selectedIcon: Icon(Icons.book),
-                      icon: Icon(Icons.book),
+                      selectedIcon: Image.asset(
+                        'assets/icons/journal.png',
+                        height: 24,
+                        width: 24,
+                      ),
+                      icon: Image.asset(
+                        'assets/icons/journal.png',
+                        height: 24,
+                        width: 24,
+                      ),
                       label: 'Journal',
                     ),
                     NavigationDestination(
-                      icon: Badge(child: Icon(Icons.calculate)),
+                      icon: Image.asset(
+                        'assets/icons/evaluate.png',
+                        height: 24,
+                        width: 24,
+                      ),
                       label: 'Evaluate',
                     ),
                     NavigationDestination(
-                      icon: Badge(
-                        label: Text('2'),
-                        child: Icon(Icons.compass_calibration),
+                      icon: Image.asset(
+                        'assets/icons/compas.png',
+                        height: 24,
+                        width: 24,
                       ),
                       label: 'Explore',
                     ),
                     NavigationDestination(
-                      icon: Badge(
-                        label: Text('3'),
-                        child: Icon(Icons.portable_wifi_off_outlined),
+                      icon: Image.asset(
+                        'assets/icons/profile.png',
+                        height: 24,
+                        width: 24,
                       ),
                       label: 'Profile',
                     ),
                   ],
                 ),
-              )
-            : LoginPage(pb: widget.pb),
-        // home: Scaffold(
-        //   body: _pages[_currentIndex],
-        //   bottomNavigationBar: NavigationBar(
-        //     backgroundColor: Colors.white,
-        //     onDestinationSelected: (int index) {
-        //       setState(() {
-        //         _currentIndex = index;
-        //       });
-        //     },
-        //     indicatorColor: Color(0xffDAE7C9),
-        //     selectedIndex: _currentIndex,
-        //     destinations: <Widget>[
-        //       NavigationDestination(
-        //         selectedIcon: Image.asset(
-        //           'assets/icons/journal.png',
-        //           height: 24,
-        //           width: 24,
-        //         ),
-        //         icon: Image.asset(
-        //           'assets/icons/journal.png',
-        //           height: 24,
-        //           width: 24,
-        //         ),
-        //         label: 'Journal',
-        //       ),
-        //       NavigationDestination(
-        //         icon: Badge(
-        //           child: Image.asset(
-        //             'assets/icons/evaluate.png',
-        //             height: 24,
-        //             width: 24,
-        //           ),
-        //         ),
-        //         label: 'Evaluate',
-        //       ),
-        //       NavigationDestination(
-        //         icon: Badge(
-        //           label: Text('2'),
-        //           child: Image.asset(
-        //             'assets/icons/compas.png',
-        //             height: 24,
-        //             width: 24,
-        //           ),
-        //         ),
-        //         label: 'Explore',
-        //       ),
-        //       NavigationDestination(
-        //         icon: Badge(
-        //           label: Text('3'),
-        //           child: Image.asset(
-        //             'assets/icons/profile.png',
-        //             height: 24,
-        //             width: 24,
-        //           ),
-        //         ),
-        //         label: 'Profile',
-        //       ),
-        //     ],
-        //   ),
-        // ));
-        );
+              ));
   }
 }
