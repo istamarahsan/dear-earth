@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:dearearth/pages/home.dart';
 import 'package:dearearth/pages/login.dart';
@@ -7,7 +9,11 @@ import 'package:dearearth/pages/profile.dart';
 import 'package:pocketbase/pocketbase.dart';
 
 void main() {
-  final pb = PocketBase('http://pbdev.dearearth.app');
+  if (!(const bool.hasEnvironment('PB_URL'))) {
+    throw Exception("PB_URL compile-time environment variable is not set.");
+  }
+  const pbUrl = String.fromEnvironment('PB_URL');
+  final pb = PocketBase(pbUrl);
   runApp(DearEarthApp(pb: pb));
 }
 
