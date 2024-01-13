@@ -4,23 +4,22 @@ import 'package:dearearth/pages/login.dart';
 import 'package:dearearth/pages/explore.dart';
 import 'package:dearearth/pages/evaluate.dart';
 import 'package:dearearth/pages/profile.dart';
-import 'package:dearearth/models/menu_bar.dart';
 import 'package:pocketbase/pocketbase.dart';
 
 void main() {
   final pb = PocketBase('http://pbdev.dearearth.app');
-  runApp(MyApp(pb: pb));
+  runApp(DearEarthApp(pb: pb));
 }
 
-class MyApp extends StatefulWidget {
+class DearEarthApp extends StatefulWidget {
   final PocketBase pb;
-  const MyApp({Key? key, required this.pb}) : super(key: key);
+  const DearEarthApp({Key? key, required this.pb}) : super(key: key);
 
   @override
-  _MyAppState createState() => _MyAppState();
+  DearEarthAppState createState() => DearEarthAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class DearEarthAppState extends State<DearEarthApp> {
   int _currentIndex = 0;
 
   late final List<Widget> _pages;

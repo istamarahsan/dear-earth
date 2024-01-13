@@ -396,7 +396,7 @@ AppBar _appBar(BuildContext context) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => MyApp(
+            builder: (context) => DearEarthApp(
               pb: pb,
             ),
           ),
