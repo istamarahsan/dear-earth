@@ -3,19 +3,16 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/date_symbol_data_local.dart';
 import 'package:mime/mime.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:dearearth/main.dart';
-import 'package:dearearth/pages/home.dart';
 import 'package:pocketbase/pocketbase.dart';
 
 class ChatPage extends StatefulWidget {
@@ -68,7 +65,8 @@ class _ChatPageState extends State<ChatPage> {
             text: it.getStringValue("content")));
     setState(() {
       _messages.clear();
-      _messages.insertAll(0, [starterMessage, ...chatHistoryMessages].reversed.toList());
+      _messages.insertAll(
+          0, [starterMessage, ...chatHistoryMessages].reversed.toList());
     });
   }
 
@@ -252,35 +250,23 @@ class _ChatPageState extends State<ChatPage> {
         author: modelUser, id: const Uuid().v4(), text: responseText));
   }
 
-  void _loadMessages() async {
-    // Add a hello message when the user enters the chat page
-    final helloMessage = types.TextMessage(
-      author: const types.User(id: 'systemcurrentUser'),
-      createdAt: DateTime.now().millisecondsSinceEpoch,
-      id: const Uuid().v4(),
-      text: 'Hello! Welcome to the chat!',
-    );
-
-    setState(() {
-      _messages = [helloMessage];
-    });
-
-    // Load messages from the JSON file
-    final response = await rootBundle.loadString('assets/messages.json');
-    final messages = (jsonDecode(response) as List)
-        .map((e) => types.Message.fromJson(e as Map<String, dynamic>))
-        .toList();
-
-    setState(() {
-      _messages.addAll(messages);
-    });
-  }
-
   @override
   Widget build(BuildContext context) => Material(
         child: Scaffold(
           key: _scaffoldKey,
-          appBar: _appBar(context),
+          appBar: _appBar(
+            context,
+            onBackPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => DearEarthApp(
+                    pb: widget.pb,
+                  ),
+                ),
+              );
+            },
+          ),
           body: Chat(
             messages: _messages,
             onAttachmentPressed: _handleAttachmentPressed,
@@ -320,13 +306,13 @@ class CustomMessageContainer extends StatelessWidget {
   }
 }
 
-AppBar _appBar(BuildContext context) {
+AppBar _appBar(BuildContext context, { void Function()? onBackPressed }) {
   return AppBar(
     title: Padding(
       padding: const EdgeInsets.only(left: 0),
       child: Row(
         children: [
-          Stack(
+          const Stack(
             alignment: Alignment.center,
             children: [
               Text(
@@ -350,18 +336,18 @@ AppBar _appBar(BuildContext context) {
               ),
             ],
           ),
-          SizedBox(
+          const SizedBox(
             width: 10,
           ),
           Container(
             width: 2,
             height: 38,
-            decoration: BoxDecoration(color: Color(0xff48672f)),
+            decoration: const BoxDecoration(color: Color(0xff48672f)),
           ),
-          SizedBox(
+          const SizedBox(
             width: 10,
           ),
-          Column(
+          const Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -389,29 +375,17 @@ AppBar _appBar(BuildContext context) {
     elevation: 0.0,
     centerTitle: false,
     leading: IconButton(
-      icon: Icon(Icons.arrow_back),
-      onPressed: () {
-        PocketBase pb = PocketBase('http://pbdev.dearearth.app');
-        // Navigate to the homepage when the back arrow is pressed
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => DearEarthApp(
-              pb: pb,
-            ),
-          ),
-        );
-      },
-    ),
+        icon: const Icon(Icons.arrow_back), onPressed: onBackPressed),
     actions: [
       GestureDetector(
         onTap: () {},
         child: Container(
           alignment: Alignment.center,
-          margin: EdgeInsets.only(right: 20, top: 10, bottom: 10),
-          padding: EdgeInsets.only(right: 15, top: 8, bottom: 8, left: 15),
+          margin: const EdgeInsets.only(right: 20, top: 10, bottom: 10),
+          padding:
+              const EdgeInsets.only(right: 15, top: 8, bottom: 8, left: 15),
           decoration: BoxDecoration(
-              color: Color(0xff48672f),
+              color: const Color(0xff48672f),
               borderRadius: BorderRadius.circular(40)),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -422,10 +396,10 @@ AppBar _appBar(BuildContext context) {
                 height: 20,
                 width: 20,
               ),
-              SizedBox(
+              const SizedBox(
                 width: 5,
               ),
-              Text(
+              const Text(
                 '595 xp',
                 style: TextStyle(
                     fontSize: 14,
