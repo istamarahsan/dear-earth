@@ -12,10 +12,12 @@ class Chat {
   final int id;
   final ChatStarter starter;
   final ChatStatus status;
+  final DateTime started;
 
   const Chat({
     required this.id,
     required this.starter,
-    this.status = ChatStatus.active
+    this.status = ChatStatus.active,
+    required this.started
   });
 }

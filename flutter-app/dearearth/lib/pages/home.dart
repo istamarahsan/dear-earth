@@ -1,17 +1,18 @@
 // ignore_for_file: prefer_const_constructors
 import 'dart:convert';
 
+import 'package:dearearth/journal/journal.dart';
 import 'package:dearearth/pages/chat.dart';
 import 'package:dearearth/models/popular_topics.dart';
 import 'package:dearearth/models/progress_bar.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:pocketbase/pocketbase.dart';
 
 class HomePage extends StatefulWidget {
   final PocketBase pb;
-  const HomePage({super.key, required this.pb});
+  final ChatsData chatsData;
+  const HomePage({super.key, required this.pb, required this.chatsData});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -19,7 +20,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<PopularTopics> topics = [];
-  String? chatId;
+  Chat? chat;
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -27,10 +28,12 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     topics = PopularTopics.getTopics();
-    widget.pb.collection("chats")
-      .getFullList()
-      .then((list) => list.firstOrNull)
-      .then((value) => setState(() { chatId = value?.id; }));
+    widget.chatsData
+        .getChats()
+        .then((value) => value.firstOrNull)
+        .then((value) => setState(() {
+              chat = value;
+            }));
   }
 
   @override
@@ -194,20 +197,18 @@ class _HomePageState extends State<HomePage> {
             children: [
               TextButton(
                 onPressed: () async {
-                  if (chatId == null) {
-                    http.post(
-                      widget.pb.buildUrl("/api/dearearth/chat/create"), 
-                      headers: {
-                        "Authorization": "Bearer ${widget.pb.authStore.token}"
-                      })
-                      .then((response) => setState(() {
-                        chatId = jsonDecode(response.body)["id"];
-                      }));
-                  } if (chatId != null) {
+                  if (chat == null) {
+                    widget.chatsData.createChat(
+                        starterName: 'debug_starter', now: DateTime.now());
+                  } else {
                     Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => ChatPage(pb: widget.pb, chatId: chatId!)),
-                  );
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ChatPage(
+                              pb: widget.pb,
+                              chatsData: widget.chatsData,
+                              chat: chat!)),
+                    );
                   }
                 },
                 style: TextButton.styleFrom(
@@ -215,7 +216,7 @@ class _HomePageState extends State<HomePage> {
                   padding: EdgeInsets.only(left: 15, right: 15),
                   backgroundColor: Color(0xff48672F),
                 ),
-                child: Text(chatId != null ? 'Continue' : 'Interact'),
+                child: Text(chat != null ? 'Continue' : 'Interact'),
               ),
             ],
           ),
@@ -318,7 +319,9 @@ class _HomePageState extends State<HomePage> {
         child: Text(
           'Magic Journal 🍃✨',
           style: TextStyle(
-              color: Color(0xff174A41), fontSize: 22, fontWeight: FontWeight.w600),
+              color: Color(0xff174A41),
+              fontSize: 22,
+              fontWeight: FontWeight.w600),
         ),
       ),
       backgroundColor: Colors.white,
