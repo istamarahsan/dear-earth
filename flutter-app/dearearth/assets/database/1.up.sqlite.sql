@@ -28,3 +28,5 @@ CREATE TABLE chat_submission (
   PRIMARY KEY (`chat_id`, `number`),
   FOREIGN KEY (`chat_id`) REFERENCES `chat`(`id`) ON DELETE CASCADE
 );
+
+INSERT INTO chat_starter(`name`, `content`) VALUES ('debug_starter', 'DEBUG');
