@@ -31,8 +31,9 @@ Future main() async {
       version: currentDatabaseVersion);
 
   final chatsData = ChatsData.sqlite(database);
+  final chatbotService = ChatbotService(pb: pb);
 
-  runApp(DearEarthApp(pb: pb, chatsData: chatsData));
+  runApp(DearEarthApp(pb: pb, chatbotService: chatbotService, chatsData: chatsData));
 }
 
 Future<sqflite.Database> openDatabase(
@@ -106,8 +107,9 @@ List<String> parseMigrationStatements(String raw) {
 
 class DearEarthApp extends StatefulWidget {
   final PocketBase pb;
+  final ChatbotService chatbotService;
   final ChatsData chatsData;
-  const DearEarthApp({Key? key, required this.pb, required this.chatsData})
+  const DearEarthApp({Key? key, required this.pb, required this.chatbotService, required this.chatsData})
       : super(key: key);
 
   @override
@@ -126,7 +128,7 @@ class DearEarthAppState extends State<DearEarthApp> {
       setState(() {});
     });
     _pages = [
-      HomePage(pb: widget.pb, chatsData: widget.chatsData),
+      HomePage(pb: widget.pb, chatbotService: widget.chatbotService, chatsData: widget.chatsData),
       EvaluatePage(),
       ExplorePage(),
       ProfilePage(pb: widget.pb)

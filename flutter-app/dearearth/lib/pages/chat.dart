@@ -18,11 +18,13 @@ import 'package:pocketbase/pocketbase.dart';
 
 class ChatPage extends StatefulWidget {
   final PocketBase pb;
+  final journal.ChatbotService chatbotService;
   final journal.Chat chat;
   final journal.ChatsData chatsData;
   const ChatPage(
       {super.key,
       required this.pb,
+      required this.chatbotService,
       required this.chat,
       required this.chatsData});
 
@@ -227,25 +229,30 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void _handleSendPressed(types.PartialText message) async {
-    final userMessage = await widget.chatsData.addMessageToChat(
+
+    final now = DateTime.now();
+
+    _addMessage(types.TextMessage(
+        author: currentUser,
+        id: now.toIso8601String(),
+        createdAt: now.millisecondsSinceEpoch,
+        text: message.text));
+
+    final chatHistory =
+        await widget.chatsData.getChatMessages(chatId: widget.chat.id);
+    final response = await widget.chatbotService
+        .send(widget.chat, message.text, chatHistory);
+
+    await widget.chatsData.addMessageToChat(
         chatId: widget.chat.id,
         content: message.text,
         role: journal.ChatRole.user,
-        timestamp: DateTime.now());
-
-    const response = 'hello!';
-
+        timestamp: now);
     final modelResponse = await widget.chatsData.addMessageToChat(
         chatId: widget.chat.id,
         content: response,
         role: journal.ChatRole.model,
         timestamp: DateTime.now());
-
-    _addMessage(types.TextMessage(
-        author: currentUser,
-        id: userMessage.timestamp.toIso8601String(),
-        createdAt: userMessage.timestamp.millisecondsSinceEpoch,
-        text: userMessage.content));
 
     _addMessage(types.TextMessage(
         author: modelUser,
@@ -264,8 +271,10 @@ class _ChatPageState extends State<ChatPage> {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>
-                      DearEarthApp(pb: widget.pb, chatsData: widget.chatsData),
+                  builder: (context) => DearEarthApp(
+                      pb: widget.pb,
+                      chatbotService: widget.chatbotService,
+                      chatsData: widget.chatsData),
                 ),
               );
             },

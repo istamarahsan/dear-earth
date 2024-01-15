@@ -12,7 +12,12 @@ import 'package:pocketbase/pocketbase.dart';
 class HomePage extends StatefulWidget {
   final PocketBase pb;
   final ChatsData chatsData;
-  const HomePage({super.key, required this.pb, required this.chatsData});
+  final ChatbotService chatbotService;
+  const HomePage(
+      {super.key,
+      required this.pb,
+      required this.chatsData,
+      required this.chatbotService});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -172,7 +177,7 @@ class _HomePageState extends State<HomePage> {
           ),
           SizedBox(height: 15),
           Row(
-            children: [
+            children: const [
               Flexible(
                 child: Text(
                   'Write today’s love letter',
@@ -183,7 +188,7 @@ class _HomePageState extends State<HomePage> {
           ),
           SizedBox(height: 15),
           Row(
-            children: [
+            children: const [
               Flexible(
                 child: Text(
                   'Love the Earth, learn anything about the Earth. Express your commitment',
@@ -198,8 +203,11 @@ class _HomePageState extends State<HomePage> {
               TextButton(
                 onPressed: () async {
                   if (chat == null) {
-                    widget.chatsData.createChat(
+                    final createdChat = await widget.chatsData.createChat(
                         starterName: 'debug_starter', now: DateTime.now());
+                    setState(() {
+                      chat = createdChat;
+                    });
                   } else {
                     Navigator.pushReplacement(
                       context,
@@ -207,6 +215,7 @@ class _HomePageState extends State<HomePage> {
                           builder: (context) => ChatPage(
                               pb: widget.pb,
                               chatsData: widget.chatsData,
+                              chatbotService: widget.chatbotService,
                               chat: chat!)),
                     );
                   }

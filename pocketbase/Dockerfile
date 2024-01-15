@@ -1,20 +1,29 @@
-FROM alpine:3
+FROM golang:1.21.6-alpine AS build
 
-ARG PB_VERSION=0.20.1
+WORKDIR /build
+
+COPY go.mod .
+COPY go.sum .
+
+RUN go mod download
+
+COPY *.go .
+COPY migrations/*.go ./migrations/
+
+RUN CGO_ENABLED=0 go build -o dearearthpb
+
+FROM alpine:3
 
 RUN apk add --no-cache \
     unzip \
     ca-certificates
 
-# download and unzip PocketBase
-ADD https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_linux_amd64.zip /tmp/pb.zip
-RUN unzip /tmp/pb.zip -d /pb/
+WORKDIR /pb
 
-COPY ./migrations /pb/pb_migrations
+COPY --from=build /build/dearearthpb .
 
-COPY ./hooks /pb/pb_hooks
+COPY ./migrations ./pb_migrations
 
-EXPOSE 8080
+COPY ./hooks ./pb_hooks
 
-# start PocketBase
-CMD ["/pb/pocketbase", "serve", "--http=0.0.0.0:8080"]
+CMD ["sh", "-c", "/pb/dearearthpb serve --http=0.0.0.0:${PORT:-8080}"]
