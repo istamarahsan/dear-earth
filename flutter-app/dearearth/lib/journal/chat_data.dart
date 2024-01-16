@@ -111,7 +111,7 @@ class _ChatsDataSql implements ChatsData {
   @override
   Future<List<ChatStarter>> getChatStarters() async {
     final dbResult = await db.rawQuery(
-        "SELECT name, content FROM chat_starter WHERE name != debug_starter");
+        "SELECT name, content FROM chat_starter WHERE name != 'debug_starter'");
     return dbResult
         .map((row) => ChatStarter(
             name: row['name'] as String, content: row['content'] as String))
