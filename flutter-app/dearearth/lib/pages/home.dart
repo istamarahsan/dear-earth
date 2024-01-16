@@ -6,6 +6,17 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pocketbase/pocketbase.dart';
 
+extension _DateTimeExt on DateTime {
+  bool onLocalSameDay(DateTime other) {
+    final thisLocal = toLocal();
+    final otherLocal = other.toLocal();
+
+    return thisLocal.day == otherLocal.day &&
+        thisLocal.month == otherLocal.month &&
+        thisLocal.year == otherLocal.year;
+  }
+}
+
 class HomePage extends StatefulWidget {
   final PocketBase pb;
   final ChatsData chatsData;
@@ -114,10 +125,8 @@ class _HomePageState extends State<HomePage> {
                                 children: [
                                   Text(
                                     availableStarters![index].name,
-                                    style: TextStyle(
-                                        color: index % 2 == 0
-                                            ? Colors.white
-                                            : Colors.black,
+                                    style: const TextStyle(
+                                        color: Colors.white,
                                         fontSize: 20,
                                         fontWeight: FontWeight.w600),
                                     textAlign: TextAlign.center,
@@ -127,10 +136,8 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                   Text(
                                     availableStarters![index].content,
-                                    style: TextStyle(
-                                      color: index % 2 == 0
-                                          ? Colors.white
-                                          : Colors.black,
+                                    style: const TextStyle(
+                                      color: Colors.white,
                                       fontSize: 12,
                                       fontWeight: FontWeight.w400,
                                     ),
@@ -142,8 +149,32 @@ class _HomePageState extends State<HomePage> {
                             Padding(
                               padding:
                                   const EdgeInsets.only(left: 30, right: 30),
-                              child: Image.asset(
-                                  'assets/topics/stop_scrolling.png'),
+                              child: TextButton(
+                                onPressed: () async {
+                                  final createdChat = await widget.chatsData
+                                      .createChat(
+                                          starterName:
+                                              availableStarters![index].name,
+                                          now: DateTime.now());
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => ChatPage(
+                                            pb: widget.pb,
+                                            chatsData: widget.chatsData,
+                                            chatbotService:
+                                                widget.chatbotService,
+                                            chat: createdChat)),
+                                  );
+                                },
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.black,
+                                  padding: const EdgeInsets.only(
+                                      left: 15, right: 15),
+                                  backgroundColor: const Color(0xffF9FAEF),
+                                ),
+                                child: const Text('Interact'),
+                              ),
                             ),
                           ],
                         ),
@@ -160,6 +191,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Container _headerSection(BuildContext context) {
+    final now = DateTime.now();
     return Container(
       margin: const EdgeInsets.only(left: 25, right: 25),
       padding: const EdgeInsets.all(25),
@@ -167,73 +199,77 @@ class _HomePageState extends State<HomePage> {
         color: const Color(0xffF9FAEF),
         borderRadius: BorderRadius.circular(15),
       ),
-      child: Column(
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                DateFormat.yMd(Intl.systemLocale).format(DateTime.now()),
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-              Image.asset('assets/header/world.png')
-            ],
-          ),
-          const SizedBox(height: 15),
-          const Row(
-            children: [
-              Flexible(
-                child: Text(
-                  'Write today’s love letter',
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 24),
+      child: activeChats == null ||
+              activeChats!.any((it) => it.started.onLocalSameDay(now))
+          ? const SizedBox.shrink()
+          : Column(
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      DateFormat.yMd(Intl.systemLocale).format(DateTime.now()),
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    Image.asset('assets/header/world.png')
+                  ],
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 15),
-          const Row(
-            children: [
-              Flexible(
-                child: Text(
-                  'Love the Earth, learn anything about the Earth. Express your commitment',
-                  style: TextStyle(fontWeight: FontWeight.w600),
+                const SizedBox(height: 15),
+                const Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        'Write today’s love letter',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w700, fontSize: 24),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 15),
-          Row(
-            children: [
-              TextButton(
-                onPressed: () async {
-                  if (availableStarters!.isEmpty) {
-                    return;
-                  }
-                  final createdChat = await widget.chatsData.createChat(
-                      starterName: availableStarters!.first.name,
-                      now: DateTime.now());
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ChatPage(
-                            pb: widget.pb,
-                            chatsData: widget.chatsData,
-                            chatbotService: widget.chatbotService,
-                            chat: createdChat)),
-                  );
-                },
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.only(left: 15, right: 15),
-                  backgroundColor: const Color(0xff48672F),
+                const SizedBox(height: 15),
+                const Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        'Love the Earth, learn anything about the Earth. Express your commitment',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ],
                 ),
-                child: const Text('Interact'),
-              ),
-            ],
-          ),
-        ],
-      ),
+                const SizedBox(height: 15),
+                Row(
+                  children: [
+                    TextButton(
+                      onPressed: () async {
+                        if (availableStarters!.isEmpty) {
+                          return;
+                        }
+                        final createdChat = await widget.chatsData.createChat(
+                            starterName: availableStarters!.first.name,
+                            now: DateTime.now());
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => ChatPage(
+                                  pb: widget.pb,
+                                  chatsData: widget.chatsData,
+                                  chatbotService: widget.chatbotService,
+                                  chat: createdChat)),
+                        );
+                      },
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.only(left: 15, right: 15),
+                        backgroundColor: const Color(0xff48672F),
+                      ),
+                      child: const Text('Interact'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
     );
   }
 
