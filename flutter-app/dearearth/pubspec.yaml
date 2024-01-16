@@ -47,6 +47,9 @@ dependencies:
   mime: ^1.0.4
   url_launcher: ^6.2.3
   pocketbase: ^0.17.0
+  sqflite: ^2.3.0
+  path: ^1.8.3
+  collection: ^1.18.0
 
 dev_dependencies:
   flutter_test:
@@ -123,6 +126,8 @@ flutter:
     - assets/journeys/Delete Emails.png
     - assets/journeys/Stop Scrolling.png
     - assets/journeys/Unplug it Now!.png
+
+    - assets/database/
 
 
   # An image asset can refer to one or more resolution-specific "variants", see

@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:dearearth/journal/journal.dart';
 import 'package:flutter/material.dart';
 import 'package:dearearth/pages/home.dart';
 import 'package:dearearth/pages/login.dart';
@@ -7,19 +9,108 @@ import 'package:dearearth/pages/explore.dart';
 import 'package:dearearth/pages/evaluate.dart';
 import 'package:dearearth/pages/profile.dart';
 import 'package:pocketbase/pocketbase.dart';
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart' as sqflite;
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:path_provider/path_provider.dart' as path_provider;
 
-void main() {
+Future main() async {
   if (!(const bool.hasEnvironment('PB_URL'))) {
     throw Exception("PB_URL compile-time environment variable is not set.");
   }
+
+  WidgetsFlutterBinding.ensureInitialized();
+
   const pbUrl = String.fromEnvironment('PB_URL');
   final pb = PocketBase(pbUrl);
-  runApp(DearEarthApp(pb: pb));
+
+  final currentDatabaseVersion = await getCurrentDatabaseVersion(rootBundle);
+  final databasesPath = await resolveDatabasesPath();
+  final database = await openDatabase(
+      path: join(databasesPath, 'dearearth.db'),
+      version: currentDatabaseVersion);
+
+  final chatsData = ChatsData.sqlite(database);
+  final chatbotService = ChatbotService(pb: pb);
+
+  runApp(DearEarthApp(pb: pb, chatbotService: chatbotService, chatsData: chatsData));
+}
+
+Future<sqflite.Database> openDatabase(
+    {required String path, required int version}) async {
+  return await sqflite.openDatabase(
+    path,
+    onCreate: (db, version) async {
+      for (var i = 1; i <= version; i++) {
+        final statements = await loadMigrationUp(rootBundle, number: i);
+        for (var statement in statements!) {
+          await db.execute(statement);
+        }
+      }
+    },
+    onUpgrade: (db, oldVersion, newVersion) async {
+      for (var i = oldVersion + 1; i <= newVersion; i++) {
+        final statements = await loadMigrationUp(rootBundle, number: i);
+        for (var statement in statements!) {
+          await db.execute(statement);
+        }
+      }
+    },
+    version: version,
+  );
+}
+
+Future<String> resolveDatabasesPath() {
+  return (Platform.isAndroid
+      ? sqflite.getDatabasesPath()
+      : path_provider.getLibraryDirectory().then((dir) => dir.path));
+}
+
+const migrationsPath = "assets/database";
+
+Future<int> getCurrentDatabaseVersion(AssetBundle assetBundle) async {
+  final meta = await assetBundle.loadStructuredData(
+      "$migrationsPath/meta.json", (raw) => Future.value(json.decode(raw)));
+  return (meta as dynamic)["currentVersion"] as int;
+}
+
+Future<List<String>?> loadMigrationUp(AssetBundle assetBundle,
+    {required int number}) async {
+  try {
+    final raw = await assetBundle
+        .loadString("$migrationsPath/$number.up.sqlite.sql");
+    return parseMigrationStatements(raw);
+  } catch (e) {
+    return null;
+  }
+}
+
+Future<List<String>?> loadMigrationDown(AssetBundle assetBundle,
+    {required int number}) async {
+  try {
+    final raw = await assetBundle
+        .loadString("$migrationsPath/$number.down.sqlite.sql");
+    return parseMigrationStatements(raw);
+  } catch (e) {
+    return null;
+  }
+}
+
+List<String> parseMigrationStatements(String raw) {
+  return raw.replaceAll('\n', '')
+            .replaceAll(RegExp(r'\s(\s+)'), ' ')
+            .trim()
+            .split(";")
+            .where((str) => str.isNotEmpty)
+            .toList();
 }
 
 class DearEarthApp extends StatefulWidget {
   final PocketBase pb;
-  const DearEarthApp({Key? key, required this.pb}) : super(key: key);
+  final ChatbotService chatbotService;
+  final ChatsData chatsData;
+  const DearEarthApp({Key? key, required this.pb, required this.chatbotService, required this.chatsData})
+      : super(key: key);
 
   @override
   DearEarthAppState createState() => DearEarthAppState();
@@ -37,7 +128,7 @@ class DearEarthAppState extends State<DearEarthApp> {
       setState(() {});
     });
     _pages = [
-      HomePage(pb: widget.pb),
+      HomePage(pb: widget.pb, chatbotService: widget.chatbotService, chatsData: widget.chatsData),
       EvaluatePage(),
       ExplorePage(),
       ProfilePage(pb: widget.pb)

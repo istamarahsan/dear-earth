@@ -1,6 +1,7 @@
-import 'dart:convert';
 import 'dart:io';
 
+import 'package:collection/collection.dart';
+import 'package:dearearth/journal/journal.dart' as journal;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
@@ -17,8 +18,15 @@ import 'package:pocketbase/pocketbase.dart';
 
 class ChatPage extends StatefulWidget {
   final PocketBase pb;
-  final String chatId;
-  const ChatPage({super.key, required this.pb, required this.chatId});
+  final journal.ChatbotService chatbotService;
+  final journal.Chat chat;
+  final journal.ChatsData chatsData;
+  const ChatPage(
+      {super.key,
+      required this.pb,
+      required this.chatbotService,
+      required this.chat,
+      required this.chatsData});
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -27,7 +35,7 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   types.User modelUser = const types.User(id: "model");
   types.User currentUser = const types.User(id: "user");
-  List<types.Message> _messages = [];
+  final List<types.Message> _messages = [];
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -44,29 +52,28 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void _fetchAndLoadChatHistory() async {
-    final chatRecord = await widget.pb
-        .collection('chats')
-        .getOne(widget.chatId, expand: 'starter,history');
-    final starterRecord = chatRecord.expand["starter"]![0];
-    final chatHistoryRecords = chatRecord.expand["history"] ?? [];
-    chatHistoryRecords.sort(
-        (a, b) => a.getIntValue("order").compareTo(b.getIntValue("order")));
-
+    final messages =
+        await widget.chatsData.getChatMessages(chatId: widget.chat.id);
+    final messagesAreSorted = messages.isSortedBy((msg) => msg.timestamp);
+    final messagesSorted = messagesAreSorted
+        ? messages
+        : messages.sortedBy((msg) => msg.timestamp).toList();
     final starterMessage = types.TextMessage(
-        id: starterRecord.id,
         author: modelUser,
-        createdAt: DateTime.parse(chatRecord.created).millisecondsSinceEpoch,
-        text: starterRecord.getStringValue("content"));
-    final chatHistoryMessages = chatHistoryRecords.map((it) =>
-        types.TextMessage(
-            id: it.id,
-            author: it.getIntValue("order") % 2 == 0 ? modelUser : currentUser,
-            createdAt: DateTime.parse(it.created).millisecondsSinceEpoch,
-            text: it.getStringValue("content")));
+        id: widget.chat.started.toIso8601String(),
+        createdAt: widget.chat.started.millisecondsSinceEpoch,
+        text: widget.chat.starter.content);
+    final convertedMessages = messagesSorted
+        .map((e) => types.TextMessage(
+            author: e.role == journal.ChatRole.model ? modelUser : currentUser,
+            id: e.timestamp.toIso8601String(),
+            createdAt: e.timestamp.millisecondsSinceEpoch,
+            text: e.content))
+        .toList();
     setState(() {
       _messages.clear();
       _messages.insertAll(
-          0, [starterMessage, ...chatHistoryMessages].reversed.toList());
+          0, [starterMessage, ...convertedMessages].reversed.toList());
     });
   }
 
@@ -222,32 +229,36 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void _handleSendPressed(types.PartialText message) async {
-    final userMessage = message.text;
 
-    // Add user message
-    final userTextMessage = types.TextMessage(
-      author: currentUser,
-      createdAt: DateTime.now().millisecondsSinceEpoch,
-      id: const Uuid().v4(),
-      text: userMessage,
-    );
-    _addMessage(userTextMessage);
+    final now = DateTime.now();
 
-    final endpoint =
-        widget.pb.buildUrl("/api/dearearth/chat/respond/${widget.chatId}");
-    final response = await http.post(endpoint,
-        headers: {
-          "Authorization": "Bearer ${widget.pb.authStore.token}",
-          "Content-Type": "application/json"
-        },
-        body: jsonEncode({"content": message.text}));
-    if (response.statusCode != HttpStatus.ok) {
-      print("error: ${response.toString()}");
-      return;
-    }
-    final responseText = jsonDecode(response.body)["content"];
     _addMessage(types.TextMessage(
-        author: modelUser, id: const Uuid().v4(), text: responseText));
+        author: currentUser,
+        id: now.toIso8601String(),
+        createdAt: now.millisecondsSinceEpoch,
+        text: message.text));
+
+    final chatHistory =
+        await widget.chatsData.getChatMessages(chatId: widget.chat.id);
+    final response = await widget.chatbotService
+        .send(widget.chat, message.text, chatHistory);
+
+    await widget.chatsData.addMessageToChat(
+        chatId: widget.chat.id,
+        content: message.text,
+        role: journal.ChatRole.user,
+        timestamp: now);
+    final modelResponse = await widget.chatsData.addMessageToChat(
+        chatId: widget.chat.id,
+        content: response,
+        role: journal.ChatRole.model,
+        timestamp: DateTime.now());
+
+    _addMessage(types.TextMessage(
+        author: modelUser,
+        id: modelResponse.timestamp.toIso8601String(),
+        createdAt: modelResponse.timestamp.millisecondsSinceEpoch,
+        text: modelResponse.content));
   }
 
   @override
@@ -261,8 +272,9 @@ class _ChatPageState extends State<ChatPage> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => DearEarthApp(
-                    pb: widget.pb,
-                  ),
+                      pb: widget.pb,
+                      chatbotService: widget.chatbotService,
+                      chatsData: widget.chatsData),
                 ),
               );
             },
@@ -306,7 +318,7 @@ class CustomMessageContainer extends StatelessWidget {
   }
 }
 
-AppBar _appBar(BuildContext context, { void Function()? onBackPressed }) {
+AppBar _appBar(BuildContext context, {void Function()? onBackPressed}) {
   return AppBar(
     title: Padding(
       padding: const EdgeInsets.only(left: 0),
