@@ -3,6 +3,7 @@ part of journal;
 abstract class ChatsData {
   Future<List<Chat>> getChats({ChatStatus? status});
   Future<List<ChatMessage>> getChatMessages({required int chatId});
+  Future<List<ChatStarter>> getChatStarters();
   Future<Chat> createChat(
       {required String starterName, required DateTime now, ChatStatus status});
   Future<ChatMessage> addMessageToChat(
@@ -105,5 +106,15 @@ class _ChatsDataSql implements ChatsData {
         status:
             ChatStatusExt.parse(row['status'] as String) ?? ChatStatus.active,
         started: DateTime.parse(row['time_started'] as String));
+  }
+
+  @override
+  Future<List<ChatStarter>> getChatStarters() async {
+    final dbResult = await db.rawQuery(
+        "SELECT name, content FROM chat_starter WHERE name != debug_starter");
+    return dbResult
+        .map((row) => ChatStarter(
+            name: row['name'] as String, content: row['content'] as String))
+        .toList();
   }
 }

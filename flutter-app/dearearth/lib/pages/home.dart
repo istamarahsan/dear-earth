@@ -1,12 +1,9 @@
-// ignore_for_file: prefer_const_constructors
-import 'dart:convert';
-
+import 'package:collection/collection.dart';
 import 'package:dearearth/journal/journal.dart';
 import 'package:dearearth/pages/chat.dart';
-import 'package:dearearth/models/popular_topics.dart';
 import 'package:dearearth/models/progress_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:pocketbase/pocketbase.dart';
 
 class HomePage extends StatefulWidget {
@@ -24,21 +21,29 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<PopularTopics> topics = [];
-  Chat? chat;
+  List<Chat>? activeChats;
+  List<ChatStarter>? availableStarters;
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    topics = PopularTopics.getTopics();
     widget.chatsData
         .getChats()
-        .then((value) => value.firstOrNull)
-        .then((value) => setState(() {
-              chat = value;
-            }));
+        .then((chats) =>
+            chats.where((it) => it.status == ChatStatus.active).toList())
+        .then((chats) async {
+      final allStarters = await widget.chatsData.getChatStarters();
+      final availableStarters = allStarters
+          .where((starter) =>
+              chats.none((chat) => chat.starter.name == starter.name))
+          .toList();
+      setState(() {
+        activeChats = chats;
+        this.availableStarters = availableStarters;
+      });
+    });
   }
 
   @override
@@ -49,19 +54,19 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: Colors.white,
       body: ListView(
         children: [
-          SizedBox(
+          const SizedBox(
             height: 10,
           ),
           _progressField(),
-          SizedBox(
+          const SizedBox(
             height: 30,
           ),
           _headerSection(context),
-          SizedBox(
+          const SizedBox(
             height: 30,
           ),
           _topicsSections(),
-          SizedBox(
+          const SizedBox(
             height: 30,
           ),
         ],
@@ -71,7 +76,7 @@ class _HomePageState extends State<HomePage> {
 
   Column _topicsSections() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Padding(
+      const Padding(
         padding: EdgeInsets.only(left: 25, right: 25),
         child: Text(
           'Topics for you',
@@ -79,87 +84,87 @@ class _HomePageState extends State<HomePage> {
               color: Colors.black, fontSize: 18, fontWeight: FontWeight.w600),
         ),
       ),
-      SizedBox(
+      const SizedBox(
         height: 15,
       ),
       Container(
-        padding: EdgeInsets.all(0),
+        padding: const EdgeInsets.all(0),
         height: 240,
-        child: ListView.separated(
-          itemBuilder: (context, index) {
-            return Container(
-                width: 210,
-                margin: () {
-                  if (index == topics.length - 1) {
-                    return EdgeInsets.only(left: 25, right: 25);
-                  } else {
-                    return EdgeInsets.only(left: 25);
-                  }
-                }(),
-                decoration: BoxDecoration(
-                    color: topics[index].boxColor,
-                    borderRadius: BorderRadius.circular(15)),
-                child: Padding(
-                  padding: EdgeInsets.only(bottom: 10),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(
-                            left: 20, right: 20, top: 20, bottom: 20),
+        child: availableStarters == null
+            ? const SizedBox.shrink()
+            : ListView.separated(
+                itemBuilder: (context, index) {
+                  return Container(
+                      width: 210,
+                      margin: index == availableStarters!.length - 1
+                          ? const EdgeInsets.only(left: 25, right: 25)
+                          : const EdgeInsets.only(left: 25),
+                      decoration: BoxDecoration(
+                          color: const Color(0xff385323),
+                          borderRadius: BorderRadius.circular(15)),
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
                         child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            Text(
-                              topics[index].name,
-                              style: TextStyle(
-                                  color: index % 2 == 0
-                                      ? Colors.white
-                                      : Colors.black,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w600),
-                              textAlign: TextAlign.center,
-                            ),
-                            SizedBox(
-                              height: 10,
-                            ),
-                            Text(
-                              topics[index].description,
-                              style: TextStyle(
-                                color: index % 2 == 0
-                                    ? Colors.white
-                                    : Colors.black,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w400,
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                  left: 20, right: 20, top: 20, bottom: 20),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    availableStarters![index].name,
+                                    style: TextStyle(
+                                        color: index % 2 == 0
+                                            ? Colors.white
+                                            : Colors.black,
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w600),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                  Text(
+                                    availableStarters![index].content,
+                                    style: TextStyle(
+                                      color: index % 2 == 0
+                                          ? Colors.white
+                                          : Colors.black,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  )
+                                ],
                               ),
-                              textAlign: TextAlign.center,
-                            )
+                            ),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.only(left: 30, right: 30),
+                              child: Image.asset(
+                                  'assets/topics/stop_scrolling.png'),
+                            ),
                           ],
                         ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.only(left: 30, right: 30),
-                        child: Image.asset(topics[index].iconPath),
-                      ),
-                    ],
-                  ),
-                ));
-          },
-          itemCount: topics.length,
-          separatorBuilder: (context, index) => SizedBox(
-            width: 0,
-          ),
-          scrollDirection: Axis.horizontal,
-        ),
+                      ));
+                },
+                itemCount: availableStarters!.length,
+                separatorBuilder: (context, index) => const SizedBox(
+                  width: 0,
+                ),
+                scrollDirection: Axis.horizontal,
+              ),
       ),
     ]);
   }
 
   Container _headerSection(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(left: 25, right: 25),
-      padding: EdgeInsets.all(25),
+      margin: const EdgeInsets.only(left: 25, right: 25),
+      padding: const EdgeInsets.all(25),
       decoration: BoxDecoration(
-        color: Color(0xffF9FAEF),
+        color: const Color(0xffF9FAEF),
         borderRadius: BorderRadius.circular(15),
       ),
       child: Column(
@@ -169,15 +174,15 @@ class _HomePageState extends State<HomePage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'JAN 7, 2024',
-                style: TextStyle(fontWeight: FontWeight.w600),
+                DateFormat.yMd(Intl.systemLocale).format(DateTime.now()),
+                style: const TextStyle(fontWeight: FontWeight.w600),
               ),
               Image.asset('assets/header/world.png')
             ],
           ),
-          SizedBox(height: 15),
-          Row(
-            children: const [
+          const SizedBox(height: 15),
+          const Row(
+            children: [
               Flexible(
                 child: Text(
                   'Write today’s love letter',
@@ -186,9 +191,9 @@ class _HomePageState extends State<HomePage> {
               ),
             ],
           ),
-          SizedBox(height: 15),
-          Row(
-            children: const [
+          const SizedBox(height: 15),
+          const Row(
+            children: [
               Flexible(
                 child: Text(
                   'Love the Earth, learn anything about the Earth. Express your commitment',
@@ -197,35 +202,33 @@ class _HomePageState extends State<HomePage> {
               ),
             ],
           ),
-          SizedBox(height: 15),
+          const SizedBox(height: 15),
           Row(
             children: [
               TextButton(
                 onPressed: () async {
-                  if (chat == null) {
-                    final createdChat = await widget.chatsData.createChat(
-                        starterName: 'debug_starter', now: DateTime.now());
-                    setState(() {
-                      chat = createdChat;
-                    });
-                  } else {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => ChatPage(
-                              pb: widget.pb,
-                              chatsData: widget.chatsData,
-                              chatbotService: widget.chatbotService,
-                              chat: chat!)),
-                    );
+                  if (availableStarters!.isEmpty) {
+                    return;
                   }
+                  final createdChat = await widget.chatsData.createChat(
+                      starterName: availableStarters!.first.name,
+                      now: DateTime.now());
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => ChatPage(
+                            pb: widget.pb,
+                            chatsData: widget.chatsData,
+                            chatbotService: widget.chatbotService,
+                            chat: createdChat)),
+                  );
                 },
                 style: TextButton.styleFrom(
                   foregroundColor: Colors.white,
-                  padding: EdgeInsets.only(left: 15, right: 15),
-                  backgroundColor: Color(0xff48672F),
+                  padding: const EdgeInsets.only(left: 15, right: 15),
+                  backgroundColor: const Color(0xff48672F),
                 ),
-                child: Text(chat != null ? 'Continue' : 'Interact'),
+                child: const Text('Interact'),
               ),
             ],
           ),
@@ -236,13 +239,14 @@ class _HomePageState extends State<HomePage> {
 
   Container _progressField() {
     return Container(
-      padding: EdgeInsets.only(left: 25, right: 25),
+      padding: const EdgeInsets.only(left: 25, right: 25),
       child: Row(
         children: [
           Container(
-            padding: EdgeInsets.only(left: 12, right: 12, top: 10, bottom: 10),
+            padding:
+                const EdgeInsets.only(left: 12, right: 12, top: 10, bottom: 10),
             decoration: BoxDecoration(
-                color: Color(0xffF8F9FA),
+                color: const Color(0xffF8F9FA),
                 borderRadius: BorderRadius.circular(40)),
             child: Row(
               children: [
@@ -253,14 +257,14 @@ class _HomePageState extends State<HomePage> {
                       width: 20,
                       height: 20,
                     ),
-                    Text("595 xp",
+                    const Text("595 xp",
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                         )),
                   ],
                 ),
-                SizedBox(
+                const SizedBox(
                   width: 10,
                 ),
                 Row(
@@ -270,13 +274,13 @@ class _HomePageState extends State<HomePage> {
                       width: 20,
                       height: 20,
                     ),
-                    Text("10",
+                    const Text("10",
                         style: TextStyle(
                             fontSize: 13, fontWeight: FontWeight.w600)),
                   ],
                 ),
                 Padding(
-                  padding: EdgeInsets.only(left: 10),
+                  padding: const EdgeInsets.only(left: 10),
                   child: Image.asset(
                     "assets/icons/next.png",
                     width: 20,
@@ -286,26 +290,27 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
           ),
-          SizedBox(
+          const SizedBox(
             width: 20,
           ),
           Container(
-            padding: EdgeInsets.all(0),
+            padding: const EdgeInsets.all(0),
             child: Stack(
               alignment: Alignment.centerRight,
               children: [
                 // Progress bar
                 Container(
-                  padding: EdgeInsets.all(0),
-                  child: buildProgressBar(
-                      50, BoxConstraints(minWidth: 150.0, maxWidth: 160.0)),
+                  padding: const EdgeInsets.all(0),
+                  child: buildProgressBar(50,
+                      const BoxConstraints(minWidth: 150.0, maxWidth: 160.0)),
                 ),
 
                 // Background image
                 Container(
                   decoration: BoxDecoration(
-                      color: Color(0xffF8F9FA),
-                      border: Border.all(color: Color(0xffDAE7C9), width: 3),
+                      color: const Color(0xffF8F9FA),
+                      border:
+                          Border.all(color: const Color(0xffDAE7C9), width: 3),
                       borderRadius: BorderRadius.circular(40)),
                   child: Image.asset(
                     'assets/icons/gift.png', // Replace with your image URL
@@ -323,8 +328,8 @@ class _HomePageState extends State<HomePage> {
 
   AppBar _appBar() {
     return AppBar(
-      title: Padding(
-        padding: const EdgeInsets.only(left: 8),
+      title: const Padding(
+        padding: EdgeInsets.only(left: 8),
         child: Text(
           'Magic Journal 🍃✨',
           style: TextStyle(
@@ -341,7 +346,7 @@ class _HomePageState extends State<HomePage> {
           onTap: () {},
           child: Container(
               alignment: Alignment.center,
-              margin: EdgeInsets.only(right: 20, top: 10, bottom: 10),
+              margin: const EdgeInsets.only(right: 20, top: 10, bottom: 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
