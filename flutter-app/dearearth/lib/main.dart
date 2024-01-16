@@ -13,6 +13,7 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:path_provider/path_provider.dart' as path_provider;
+import 'package:sqflite/sql.dart' as sql;
 
 Future main() async {
   if (!(const bool.hasEnvironment('PB_URL'))) {
@@ -33,7 +34,20 @@ Future main() async {
   final chatsData = ChatsData.sqlite(database);
   final chatbotService = ChatbotService(pb: pb);
 
-  runApp(DearEarthApp(pb: pb, chatbotService: chatbotService, chatsData: chatsData));
+  final starters = await pb.collection("chat_starters").getFullList();
+  await starters.fold(database.batch(), (batch, starter) {
+    batch.insert(
+        'chat_starter',
+        {
+          'name': starter.getStringValue('name'),
+          'content': starter.getStringValue('content')
+        },
+        conflictAlgorithm: sql.ConflictAlgorithm.ignore);
+    return batch;
+  }).commit(noResult: true);
+
+  runApp(DearEarthApp(
+      pb: pb, chatbotService: chatbotService, chatsData: chatsData));
 }
 
 Future<sqflite.Database> openDatabase(
@@ -77,8 +91,8 @@ Future<int> getCurrentDatabaseVersion(AssetBundle assetBundle) async {
 Future<List<String>?> loadMigrationUp(AssetBundle assetBundle,
     {required int number}) async {
   try {
-    final raw = await assetBundle
-        .loadString("$migrationsPath/$number.up.sqlite.sql");
+    final raw =
+        await assetBundle.loadString("$migrationsPath/$number.up.sqlite.sql");
     return parseMigrationStatements(raw);
   } catch (e) {
     return null;
@@ -88,8 +102,8 @@ Future<List<String>?> loadMigrationUp(AssetBundle assetBundle,
 Future<List<String>?> loadMigrationDown(AssetBundle assetBundle,
     {required int number}) async {
   try {
-    final raw = await assetBundle
-        .loadString("$migrationsPath/$number.down.sqlite.sql");
+    final raw =
+        await assetBundle.loadString("$migrationsPath/$number.down.sqlite.sql");
     return parseMigrationStatements(raw);
   } catch (e) {
     return null;
@@ -97,19 +111,24 @@ Future<List<String>?> loadMigrationDown(AssetBundle assetBundle,
 }
 
 List<String> parseMigrationStatements(String raw) {
-  return raw.replaceAll('\n', '')
-            .replaceAll(RegExp(r'\s(\s+)'), ' ')
-            .trim()
-            .split(";")
-            .where((str) => str.isNotEmpty)
-            .toList();
+  return raw
+      .replaceAll('\n', '')
+      .replaceAll(RegExp(r'\s(\s+)'), ' ')
+      .trim()
+      .split(";")
+      .where((str) => str.isNotEmpty)
+      .toList();
 }
 
 class DearEarthApp extends StatefulWidget {
   final PocketBase pb;
   final ChatbotService chatbotService;
   final ChatsData chatsData;
-  const DearEarthApp({Key? key, required this.pb, required this.chatbotService, required this.chatsData})
+  const DearEarthApp(
+      {Key? key,
+      required this.pb,
+      required this.chatbotService,
+      required this.chatsData})
       : super(key: key);
 
   @override
@@ -128,7 +147,10 @@ class DearEarthAppState extends State<DearEarthApp> {
       setState(() {});
     });
     _pages = [
-      HomePage(pb: widget.pb, chatbotService: widget.chatbotService, chatsData: widget.chatsData),
+      HomePage(
+          pb: widget.pb,
+          chatbotService: widget.chatbotService,
+          chatsData: widget.chatsData),
       EvaluatePage(),
       ExplorePage(),
       ProfilePage(pb: widget.pb)
