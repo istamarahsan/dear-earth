@@ -321,7 +321,7 @@ class _HomePageState extends State<HomePage> {
                       width: 20,
                       height: 20,
                     ),
-                    const Text("595 xp",
+                    const Text("0 xp",
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -338,7 +338,7 @@ class _HomePageState extends State<HomePage> {
                       width: 20,
                       height: 20,
                     ),
-                    const Text("10",
+                    const Text("0",
                         style: TextStyle(
                             fontSize: 13, fontWeight: FontWeight.w600)),
                   ],
