@@ -1,4 +1,3 @@
-import 'package:dearearth/pages/starter_1.dart';
 import 'package:flutter/material.dart';
 import 'package:dearearth/pages/home.dart';
 import 'package:dearearth/pages/login.dart';
@@ -32,7 +31,7 @@ class _MyAppState extends State<MyApp> {
     _pages = [
       // HomePage(),
       // nanti yang dipakai ini
-      if (isLoggedIn()) HomePage() else StarterPageOne(pb: widget.pb),
+      if (isLoggedIn()) HomePage() else LoginPage(pb: widget.pb),
       EvaluatePage(),
       ExplorePage(),
       ProfilePage(pb: widget.pb), // Access widget.pb here
@@ -93,7 +92,7 @@ class _MyAppState extends State<MyApp> {
                   ],
                 ),
               )
-            : StarterPageOne(pb: widget.pb),
+            : LoginPage(pb: widget.pb),
         // home: Scaffold(
         //   body: _pages[_currentIndex],
         //   bottomNavigationBar: NavigationBar(
