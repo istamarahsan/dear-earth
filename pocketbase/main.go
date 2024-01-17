@@ -68,6 +68,18 @@ func main() {
 
 	app := pocketbase.New()
 
+	app.OnRecordAfterAuthWithOAuth2Request("users").Add(func(e *core.RecordAuthWithOAuth2Event) error {
+		name := e.Record.Get("name")
+		avatarUrl := e.Record.Get("avatarUrl")
+		if name == nil || name == "" {
+			e.Record.Set("name", e.OAuth2User.Name)
+		}
+		if avatarUrl == nil || avatarUrl == "" {
+			e.Record.Set("avatarUrl", e.OAuth2User.AvatarUrl)
+		}
+		return app.Dao().SaveRecord(e.Record)
+	})
+
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		e.Router.POST("/api/dearearth/chat", func(c echo.Context) error {
 			var data ChatRequest
