@@ -1,4 +1,3 @@
-// ignore_for_file: prefer_const_constructors
 import 'package:flutter/material.dart';
 import 'package:pocketbase/pocketbase.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -17,6 +16,12 @@ class LoginPage extends StatelessWidget {
           height: MediaQuery.of(context).size.height,
           width: MediaQuery.of(context).size.width,
           alignment: Alignment.center,
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/starter/bg_main.png'), // Add the path to your background image
+              fit: BoxFit.cover,
+            ),
+          ),
           child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -26,30 +31,42 @@ class LoginPage extends StatelessWidget {
                   height: 200,
                   width: 200,
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 10),
                 Container(
-                  padding: EdgeInsets.all(0),
-                  child: Text(
-                    'Dear Earth',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.w800, // Add the desired fontWeight
-                      fontSize: 35.0, // Add the desired fontSize
-                    ),
+                  padding: const EdgeInsets.all(0),
+                  child: const Column(
+                    children: [
+                      Text(
+                        'Dear Earth',
+                        style: TextStyle(
+                          color: Color(0xff174A41),
+                          fontWeight: FontWeight.w800, // Add the desired fontWeight
+                          fontSize: 28.0, // Add the desired fontSize
+                        ),
+                      ),
+                      SizedBox(height: 10,),
+                      Text(
+                        'I can’t wait to start my green journey!',
+                        style: TextStyle(
+                          color: Color(0xff174A41),
+                          fontWeight: FontWeight.w500, // Add the desired fontWeight
+                          fontSize: 14.0,
+                          fontStyle: FontStyle.italic // Add the desired fontSize
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                SizedBox(height: 50),
+                const SizedBox(height: 100),
                 Container(
-                  margin: EdgeInsets.only(left: 70, right: 70),
+                  margin: const EdgeInsets.only(left: 70, right: 70),
+                  padding: const EdgeInsets.all(10),
                   child: OutlinedButton(
                     style: OutlinedButton.styleFrom(
-                      side: BorderSide(
-                        color: Color(0xffE8E8E8),
-                        width: 0.7,
-                      ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10.0),
+                        borderRadius: BorderRadius.circular(40.0),
                       ),
+                      backgroundColor: const Color(0xff48672F),
                     ),
                     onPressed: () async {
                       await pb.collection('users').authWithOAuth2('google',
@@ -65,11 +82,11 @@ class LoginPage extends StatelessWidget {
                           height: 20,
                           width: 20,
                         ),
-                        SizedBox(width: 8),
-                        Text(
+                        const SizedBox(width: 8),
+                        const Text(
                           'Continue with Google',
                           style: TextStyle(
-                            color: Color(0xffA1A1A1),
+                            color: Color.fromARGB(255, 255, 255, 255),
                             fontSize: 15,
                           ),
                         ),
@@ -77,6 +94,7 @@ class LoginPage extends StatelessWidget {
                     ),
                   ),
                 ),
+                const SizedBox(height: 100),
               ]),
         ),
       ),

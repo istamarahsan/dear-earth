@@ -12,6 +12,7 @@ import 'package:mime/mime.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
+import 'package:bubble/bubble.dart';
 
 import 'package:dearearth/main.dart';
 import 'package:pocketbase/pocketbase.dart';
@@ -285,12 +286,38 @@ class _ChatPageState extends State<ChatPage> {
             onMessageTap: _handleMessageTap,
             onPreviewDataFetched: _handlePreviewDataFetched,
             onSendPressed: _handleSendPressed,
-            showUserAvatars: true,
-            showUserNames: true,
+            showUserAvatars: false,
+            showUserNames: false,
             user: currentUser,
+            bubbleBuilder: _bubbleBuilder,
           ),
         ),
       );
+
+  Widget _bubbleBuilder(
+    Widget child, {
+    required message,
+    required nextMessageInGroup,
+  }) {
+    return Bubble(
+      color: currentUser.id != message.author.id ||
+              message.type == types.MessageType.image
+          ? const Color(0xfff5f5f7)
+          : const Color(0xff48672f),
+      margin: nextMessageInGroup
+          ? const BubbleEdges.symmetric(horizontal: 6)
+          : null,
+      nip: nextMessageInGroup
+          ? BubbleNip.no
+          : currentUser.id != message.author.id
+              ? BubbleNip.leftBottom
+              : BubbleNip.rightBottom,
+      child: DefaultTextStyle.merge(
+        style: const TextStyle(color: Colors.black),
+        child: child,
+      ),
+    );
+  }
 }
 
 class CustomMessageContainer extends StatelessWidget {

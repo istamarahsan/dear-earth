@@ -2,6 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dearearth/journal/journal.dart';
+import 'package:dearearth/pages/starter_1.dart';
+import 'package:dearearth/pages/starter_2.dart';
+import 'package:dearearth/pages/starter_3.dart';
 import 'package:flutter/material.dart';
 import 'package:dearearth/pages/home.dart';
 import 'package:dearearth/pages/login.dart';
@@ -168,62 +171,102 @@ class DearEarthAppState extends State<DearEarthApp> {
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
           useMaterial3: true,
-          fontFamily: 'Noto Sans',
+          fontFamily: 'Roboto',
         ),
         debugShowCheckedModeBanner: false,
         home: !isLoggedIn()
             ? LoginPage(pb: widget.pb)
-            : Scaffold(
-                body: _pages[_currentIndex],
-                bottomNavigationBar: NavigationBar(
-                  backgroundColor: Colors.white,
-                  onDestinationSelected: (int index) {
-                    setState(() {
-                      _currentIndex = index;
-                    });
-                  },
-                  indicatorColor: Color(0xffDAE7C9),
-                  selectedIndex: _currentIndex,
-                  destinations: <Widget>[
-                    NavigationDestination(
-                      selectedIcon: Image.asset(
-                        'assets/icons/journal.png',
-                        height: 24,
-                        width: 24,
-                      ),
-                      icon: Image.asset(
-                        'assets/icons/journal.png',
-                        height: 24,
-                        width: 24,
-                      ),
-                      label: 'Journal',
+            : !(widget.pb.authStore.model as RecordModel)
+                    .getBoolValue("hasDoneOnboarding")
+                ? _StarterFlow(onFinished: () {
+                    widget.pb.collection("users").update(
+                        (widget.pb.authStore.model as RecordModel).id,
+                        body: {"hasDoneOnboarding": true});
+                  })
+                : Scaffold(
+                    body: _pages[_currentIndex],
+                    bottomNavigationBar: NavigationBar(
+                      backgroundColor: Colors.white,
+                      onDestinationSelected: (int index) {
+                        setState(() {
+                          _currentIndex = index;
+                        });
+                      },
+                      indicatorColor: const Color(0xffDAE7C9),
+                      selectedIndex: _currentIndex,
+                      destinations: <Widget>[
+                        NavigationDestination(
+                          selectedIcon: Image.asset(
+                            'assets/icons/journal.png',
+                            height: 24,
+                            width: 24,
+                          ),
+                          icon: Image.asset(
+                            'assets/icons/journal.png',
+                            height: 24,
+                            width: 24,
+                          ),
+                          label: 'Journal',
+                        ),
+                        NavigationDestination(
+                          icon: Image.asset(
+                            'assets/icons/evaluate.png',
+                            height: 24,
+                            width: 24,
+                          ),
+                          label: 'Evaluate',
+                        ),
+                        NavigationDestination(
+                          icon: Image.asset(
+                            'assets/icons/compas.png',
+                            height: 24,
+                            width: 24,
+                          ),
+                          label: 'Explore',
+                        ),
+                        NavigationDestination(
+                          icon: Image.asset(
+                            'assets/icons/profile.png',
+                            height: 24,
+                            width: 24,
+                          ),
+                          label: 'Profile',
+                        ),
+                      ],
                     ),
-                    NavigationDestination(
-                      icon: Image.asset(
-                        'assets/icons/evaluate.png',
-                        height: 24,
-                        width: 24,
-                      ),
-                      label: 'Evaluate',
-                    ),
-                    NavigationDestination(
-                      icon: Image.asset(
-                        'assets/icons/compas.png',
-                        height: 24,
-                        width: 24,
-                      ),
-                      label: 'Explore',
-                    ),
-                    NavigationDestination(
-                      icon: Image.asset(
-                        'assets/icons/profile.png',
-                        height: 24,
-                        width: 24,
-                      ),
-                      label: 'Profile',
-                    ),
-                  ],
-                ),
-              ));
+                  ));
+  }
+}
+
+class _StarterFlow extends StatefulWidget {
+  final void Function()? onFinished;
+  const _StarterFlow({this.onFinished});
+
+  @override
+  State<_StarterFlow> createState() => _StarterFlowState();
+}
+
+class _StarterFlowState extends State<_StarterFlow> {
+  int _idx = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return switch (_idx) {
+      2 => StarterPageTwo(
+          onFinished: () => setState(() {
+            _idx++;
+          }),
+        ),
+      3 => StarterPageThree(
+          onFinished: () => setState(() {
+            widget.onFinished?.call();
+          }),
+        ),
+      _ => StarterPageOne(
+          onFinished: () => setState(() {
+            _idx++;
+          }),
+        )
+    };
   }
 }

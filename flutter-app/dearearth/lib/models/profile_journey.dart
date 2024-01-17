@@ -32,13 +32,13 @@ class ProfileJourneys {
       month: 'JAN',
       iconPath: 'assets/journeys/Stop Scrolling.png',
     ));
-    // journeys.add(ProfileJourneys(
-    //   name: 'Delete Emails',
-    //   description: 'Remember all those emails I swore I would read someday? Yeah, not gonna happen. Hitting "delete" on that inbox clutter feels like cleaning out my attic –',
-    //   date: '05',
-    //   month: 'JAN',
-    //   iconPath: 'assets/journeys/Delete Emails.png',
-    // ));
+    journeys.add(ProfileJourneys(
+      name: 'Delete Emails',
+      description: 'Remember all those emails I swore I would read someday? Yeah, not gonna happen. Hitting "delete" on that inbox clutter feels like cleaning out my attic –',
+      date: '05',
+      month: 'JAN',
+      iconPath: 'assets/journeys/Delete Emails.png',
+    ));
 
     return journeys;
   }
