@@ -19,13 +19,9 @@ import 'package:path_provider/path_provider.dart' as path_provider;
 import 'package:sqflite/sql.dart' as sql;
 
 Future main() async {
-  if (!(const bool.hasEnvironment('PB_URL'))) {
-    throw Exception("PB_URL compile-time environment variable is not set.");
-  }
-
   WidgetsFlutterBinding.ensureInitialized();
 
-  const pbUrl = String.fromEnvironment('PB_URL');
+  const pbUrl = String.fromEnvironment('PB_URL', defaultValue: "https://pb.dearearth.app");
   final pb = PocketBase(pbUrl);
 
   final currentDatabaseVersion = await getCurrentDatabaseVersion(rootBundle);
