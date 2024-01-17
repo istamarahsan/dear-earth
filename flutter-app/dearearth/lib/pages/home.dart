@@ -79,8 +79,8 @@ class _HomePageState extends State<HomePage> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              activeChats?.length != 0
-                  ? Column(
+              (activeChats?.isNotEmpty ?? false)
+                  ? const Column(
                       children: [
                         Padding(
                           padding: EdgeInsets.only(left: 25, right: 25),
@@ -113,17 +113,19 @@ class _HomePageState extends State<HomePage> {
                               );
                             },
                             child: Container(
-                              padding: EdgeInsets.all(20),
-                              margin: EdgeInsets.only(left: 15, right: 15),
+                              padding: const EdgeInsets.all(20),
+                              margin:
+                                  const EdgeInsets.only(left: 15, right: 15),
                               decoration: BoxDecoration(
-                                color: Color.fromARGB(255, 253, 255, 237),
+                                color: const Color.fromARGB(255, 253, 255, 237),
                                 borderRadius: BorderRadius.circular(20),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Color(0xff4F956F).withOpacity(0.3),
+                                    color: const Color(0xff4F956F)
+                                        .withOpacity(0.3),
                                     spreadRadius: 0,
                                     blurRadius: 2,
-                                    offset: Offset(0, 2),
+                                    offset: const Offset(0, 2),
                                   ),
                                 ],
                               ),
@@ -133,7 +135,7 @@ class _HomePageState extends State<HomePage> {
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   const SizedBox(width: 20),
-                                  Container(
+                                  SizedBox(
                                       width: 200,
                                       child: Text(chat.starter.name)),
                                   const SizedBox(width: 30),
@@ -162,7 +164,7 @@ class _HomePageState extends State<HomePage> {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       availableStarters?.isEmpty == true
           ? Container()
-          : Column(
+          : const Column(
               children: [
                 Padding(
                   padding: EdgeInsets.only(left: 25, right: 25),
@@ -276,18 +278,17 @@ class _HomePageState extends State<HomePage> {
 
   Container _headerSection(BuildContext context) {
     final now = DateTime.now();
-    return Container(
-      margin: const EdgeInsets.only(left: 25, right: 25),
-      padding: activeChats == null ||
-              activeChats!.any((it) => it.started.onLocalSameDay(now))? EdgeInsets.all(0) : EdgeInsets.all(25),
-      decoration: BoxDecoration(
-        color: const Color(0xffF9FAEF),
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: activeChats == null ||
-              activeChats!.any((it) => it.started.onLocalSameDay(now))
-          ? Container()
-          : Column(
+    return activeChats == null ||
+            activeChats!.any((it) => it.started.onLocalSameDay(now))
+        ? Container()
+        : Container(
+            margin: const EdgeInsets.only(left: 25, right: 25),
+            padding: const EdgeInsets.all(25),
+            decoration: BoxDecoration(
+              color: const Color(0xffF9FAEF),
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: Column(
               children: [
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -355,7 +356,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
             ),
-    );
+          );
   }
 
   Container _progressField() {

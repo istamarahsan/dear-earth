@@ -230,7 +230,6 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void _handleSendPressed(types.PartialText message) async {
-
     final now = DateTime.now();
 
     _addMessage(types.TextMessage(
@@ -268,6 +267,7 @@ class _ChatPageState extends State<ChatPage> {
           key: _scaffoldKey,
           appBar: _appBar(
             context,
+            widget.chat,
             onBackPressed: () {
               Navigator.pushReplacement(
                 context,
@@ -345,18 +345,37 @@ class CustomMessageContainer extends StatelessWidget {
   }
 }
 
-AppBar _appBar(BuildContext context, {void Function()? onBackPressed}) {
+String _shortMonthName(DateTime dateTime) {
+  const monthNames = {
+    1: 'Jan',
+    2: 'Feb',
+    3: 'Mar',
+    4: 'Apr',
+    5: 'May',
+    6: 'Jun',
+    7: 'Jul',
+    8: 'Aug',
+    9: 'Sep',
+    10: 'Oct',
+    11: 'Nov',
+    12: 'Dec',
+  };
+  return monthNames[dateTime.month]!;
+}
+
+AppBar _appBar(BuildContext context, journal.Chat chat,
+    {void Function()? onBackPressed}) {
   return AppBar(
     title: Padding(
       padding: const EdgeInsets.only(left: 0),
       child: Row(
         children: [
-          const Stack(
+          Stack(
             alignment: Alignment.center,
             children: [
               Text(
-                'JAN\n',
-                style: TextStyle(
+                '${_shortMonthName(chat.started).toUpperCase()}\n',
+                style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: Color(0xff48672f),
@@ -365,8 +384,10 @@ AppBar _appBar(BuildContext context, {void Function()? onBackPressed}) {
               Positioned(
                 top: 14, // Adjust this value as needed
                 child: Text(
-                  '07',
-                  style: TextStyle(
+                  chat.started.day < 10
+                      ? "0$chat.started.day"
+                      : chat.started.day.toString(),
+                  style: const TextStyle(
                     fontSize: 20, // Set a different font size for '07'
                     fontWeight: FontWeight.w600,
                     color: Color(0xff48672f),
@@ -386,21 +407,13 @@ AppBar _appBar(BuildContext context, {void Function()? onBackPressed}) {
           const SizedBox(
             width: 10,
           ),
-          const Column(
+          Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Dear Earth, I will",
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w300,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-              Text(
-                "Unplug it Now!",
-                style: TextStyle(
+                chat.starter.name,
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -439,7 +452,7 @@ AppBar _appBar(BuildContext context, {void Function()? onBackPressed}) {
                 width: 5,
               ),
               const Text(
-                '595 xp',
+                '0 xp',
                 style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
