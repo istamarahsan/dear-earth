@@ -189,13 +189,13 @@ class ProfilePage extends StatelessWidget {
                   color: Color.fromARGB(255, 253, 255, 237),
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
-            BoxShadow(
-              color: Color(0xff4F956F).withOpacity(0.3),
-              spreadRadius: 0,
-              blurRadius: 2,
-              offset: Offset(0, 2),
-            ),
-          ],
+                    BoxShadow(
+                      color: Color(0xff4F956F).withOpacity(0.3),
+                      spreadRadius: 0,
+                      blurRadius: 2,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment
@@ -370,7 +370,9 @@ class ProfilePage extends StatelessWidget {
                   ],
                 ),
               ),
-              SizedBox(height: 5,),
+              SizedBox(
+                height: 5,
+              ),
               Container(
                 padding: EdgeInsets.all(0),
                 child: Stack(

@@ -77,29 +77,74 @@ class _HomePageState extends State<HomePage> {
             height: 30,
           ),
           Column(
-            children: activeChats
-                    ?.mapIndexed((i, chat) => TextButton(
-                        onPressed: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => ChatPage(
-                                    pb: widget.pb,
-                                    chatsData: widget.chatsData,
-                                    chatbotService: widget.chatbotService,
-                                    chat: activeChats![i])),
-                          );
-                        },
-                        child: Row(
-                          children: [
-                            const SizedBox(width: 20),
-                            Text(chat.starter.name),
-                            const SizedBox(width: 30),
-                            Image.asset("assets/icons/next_bordered.png")
-                          ],
-                        )))
-                    .toList() ??
-                [],
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              activeChats?.length != 0
+                  ? Column(
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.only(left: 25, right: 25),
+                          child: Text(
+                            'Ongoing Topics',
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 15,
+                        ),
+                      ],
+                    )
+                  : Container(),
+              Column(
+                children: activeChats
+                        ?.mapIndexed((i, chat) => TextButton(
+                            onPressed: () {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => ChatPage(
+                                        pb: widget.pb,
+                                        chatsData: widget.chatsData,
+                                        chatbotService: widget.chatbotService,
+                                        chat: activeChats![i])),
+                              );
+                            },
+                            child: Container(
+                              padding: EdgeInsets.all(20),
+                              margin: EdgeInsets.only(left: 15, right: 15),
+                              decoration: BoxDecoration(
+                                color: Color.fromARGB(255, 253, 255, 237),
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Color(0xff4F956F).withOpacity(0.3),
+                                    spreadRadius: 0,
+                                    blurRadius: 2,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  const SizedBox(width: 20),
+                                  Container(
+                                      width: 200,
+                                      child: Text(chat.starter.name)),
+                                  const SizedBox(width: 30),
+                                  Image.asset("assets/icons/next_bordered.png")
+                                ],
+                              ),
+                            )))
+                        .toList() ??
+                    [],
+              ),
+            ],
           ),
           const SizedBox(
             height: 30,
@@ -115,14 +160,25 @@ class _HomePageState extends State<HomePage> {
 
   Column _topicsSections() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      const Padding(
-        padding: EdgeInsets.only(left: 25, right: 25),
-        child: Text(
-          'Topics for you',
-          style: TextStyle(
-              color: Colors.black, fontSize: 18, fontWeight: FontWeight.w600),
-        ),
-      ),
+      availableStarters?.isEmpty == true
+          ? Container()
+          : Column(
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(left: 25, right: 25),
+                  child: Text(
+                    'Topics for you',
+                    style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600),
+                  ),
+                ),
+                SizedBox(
+                  height: 15,
+                ),
+              ],
+            ),
       const SizedBox(
         height: 15,
       ),
@@ -222,14 +278,15 @@ class _HomePageState extends State<HomePage> {
     final now = DateTime.now();
     return Container(
       margin: const EdgeInsets.only(left: 25, right: 25),
-      padding: const EdgeInsets.all(25),
+      padding: activeChats == null ||
+              activeChats!.any((it) => it.started.onLocalSameDay(now))? EdgeInsets.all(0) : EdgeInsets.all(25),
       decoration: BoxDecoration(
         color: const Color(0xffF9FAEF),
         borderRadius: BorderRadius.circular(15),
       ),
       child: activeChats == null ||
               activeChats!.any((it) => it.started.onLocalSameDay(now))
-          ? const SizedBox.shrink()
+          ? Container()
           : Column(
               children: [
                 Row(
