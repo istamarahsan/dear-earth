@@ -76,6 +76,34 @@ class _HomePageState extends State<HomePage> {
           const SizedBox(
             height: 30,
           ),
+          Column(
+            children: activeChats
+                    ?.mapIndexed((i, chat) => TextButton(
+                        onPressed: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => ChatPage(
+                                    pb: widget.pb,
+                                    chatsData: widget.chatsData,
+                                    chatbotService: widget.chatbotService,
+                                    chat: activeChats![i])),
+                          );
+                        },
+                        child: Row(
+                          children: [
+                            const SizedBox(width: 20),
+                            Text(chat.starter.name),
+                            const SizedBox(width: 30),
+                            Image.asset("assets/icons/next_bordered.png")
+                          ],
+                        )))
+                    .toList() ??
+                [],
+          ),
+          const SizedBox(
+            height: 30,
+          ),
           _topicsSections(),
           const SizedBox(
             height: 30,
