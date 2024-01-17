@@ -73,12 +73,13 @@ class EvaluatePage extends StatelessWidget {
         ),
         Container(
           padding: EdgeInsets.all(0),
+          margin: EdgeInsets.only( left: 25, right: 25),
           height: 470,
           child: ListView.separated(
             itemBuilder: (context, index) {
               return Container(
                 width: 300,
-                margin: EdgeInsets.only(bottom: 15, left: 25, right: 25),
+                margin: EdgeInsets.only(bottom: 15),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(15),
