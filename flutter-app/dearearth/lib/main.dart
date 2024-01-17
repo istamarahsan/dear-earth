@@ -41,7 +41,7 @@ Future main() async {
           'name': starter.getStringValue('name'),
           'content': starter.getStringValue('content')
         },
-        conflictAlgorithm: sql.ConflictAlgorithm.ignore);
+        conflictAlgorithm: sql.ConflictAlgorithm.replace);
     return batch;
   }).commit(noResult: true);
 
