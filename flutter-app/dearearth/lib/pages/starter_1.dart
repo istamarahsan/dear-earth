@@ -7,11 +7,13 @@ import 'package:url_launcher/url_launcher.dart';
 
 class StarterPageOne extends StatelessWidget {
   final PocketBase pb;
-  const StarterPageOne({super.key, required this.pb});
+  StarterPageOne({super.key, required this.pb});
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Container(

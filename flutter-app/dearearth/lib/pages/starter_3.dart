@@ -1,4 +1,5 @@
 // ignore_for_file: prefer_const_constructors
+import 'package:dearearth/main.dart';
 import 'package:dearearth/pages/home.dart';
 import 'package:flutter/material.dart';
 import 'package:pocketbase/pocketbase.dart';
@@ -6,11 +7,13 @@ import 'package:url_launcher/url_launcher.dart';
 
 class StarterPageThree extends StatelessWidget {
   final PocketBase pb;
-  const StarterPageThree({super.key, required this.pb});
+  StarterPageThree({super.key, required this.pb});
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Container(
@@ -51,40 +54,42 @@ class StarterPageThree extends StatelessWidget {
                       Text(
                         'Explore actionable initiatives, connect with the community, and track your green journey.',
                         style: TextStyle(
-                            color: Color(0xff48672F),
-                            fontWeight:
-                                FontWeight.w400, // Add the desired fontWeight
-                            fontSize: 18.0,// Add the desired fontSize
-                            ),
+                          color: Color(0xff48672F),
+                          fontWeight:
+                              FontWeight.w400, // Add the desired fontWeight
+                          fontSize: 18.0, // Add the desired fontSize
+                        ),
                       ),
                       SizedBox(
                         height: 10,
                       ),
                       RichText(
-  text: TextSpan(
-    style: TextStyle(
-      color: Color(0xff48672F),
-      fontWeight: FontWeight.w400,
-      fontSize: 18.0,
-    ),
-    children: [
-      TextSpan(
-        text: 'It’s time to ',
-      ),
-      TextSpan(
-        text: 'thrive on your green journey',
-        style: TextStyle(
-          fontWeight: FontWeight.bold, // Add additional styles for "thrive"
-        ),
-      ),
-      TextSpan(
-        text: ' with Dear Earth.',
-      ),
-    ],
-  ),
-),
-
-                      SizedBox(height: 90,),
+                        text: TextSpan(
+                          style: TextStyle(
+                            color: Color(0xff48672F),
+                            fontWeight: FontWeight.w400,
+                            fontSize: 18.0,
+                          ),
+                          children: [
+                            TextSpan(
+                              text: 'It’s time to ',
+                            ),
+                            TextSpan(
+                              text: 'thrive on your green journey',
+                              style: TextStyle(
+                                fontWeight: FontWeight
+                                    .bold, // Add additional styles for "thrive"
+                              ),
+                            ),
+                            TextSpan(
+                              text: ' with Dear Earth.',
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(
+                        height: 90,
+                      ),
                       Image.asset('assets/starter/dot_3.png')
                     ],
                   ),
@@ -103,7 +108,11 @@ class StarterPageThree extends StatelessWidget {
                     onPressed: () async {
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) => HomePage()),
+                        MaterialPageRoute(
+                          builder: (context) => MyApp(
+                            pb: pb,
+                          ),
+                        ),
                       );
                     },
                     child: Row(

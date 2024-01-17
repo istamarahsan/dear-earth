@@ -13,6 +13,7 @@ import 'package:mime/mime.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
+import 'package:bubble/bubble.dart';
 
 import 'package:dearearth/main.dart';
 import 'package:dearearth/pages/home.dart';
@@ -46,50 +47,50 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void _handleAttachmentPressed() {
-  showModalBottomSheet<void>(
-    context: context,
-    builder: (BuildContext context) => SafeArea(
-      child: SizedBox(
-        height: 144,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                _handleImageSelection();
-              },
-              child: const Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: Text('Photo'),
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (BuildContext context) => SafeArea(
+        child: SizedBox(
+          height: 144,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _handleImageSelection();
+                },
+                child: const Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: Text('Photo'),
+                ),
               ),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                _handleFileSelection();
-              },
-              child: const Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: Text('File'),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _handleFileSelection();
+                },
+                child: const Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: Text('File'),
+                ),
               ),
-            ),
-            TextButton(
-              onPressed: () {// Contoh: Menghapus SnackBar sebelum pindah
-                Navigator.pop(context);
-              },
-              child: const Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: Text('Cancel'),
+              TextButton(
+                onPressed: () {
+                  // Contoh: Menghapus SnackBar sebelum pindah
+                  Navigator.pop(context);
+                },
+                child: const Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: Text('Cancel'),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
-
+    );
+  }
 
   void _handleFileSelection() async {
     final result = await FilePicker.platform.pickFiles(
@@ -254,12 +255,38 @@ class _ChatPageState extends State<ChatPage> {
             onMessageTap: _handleMessageTap,
             onPreviewDataFetched: _handlePreviewDataFetched,
             onSendPressed: _handleSendPressed,
-            showUserAvatars: true,
-            showUserNames: true,
+            showUserAvatars: false,
+            showUserNames: false,
             user: _user,
+            bubbleBuilder: _bubbleBuilder,
           ),
         ),
       );
+
+  Widget _bubbleBuilder(
+    Widget child, {
+    required message,
+    required nextMessageInGroup,
+  }) {
+    return Bubble(
+      color: _user.id != message.author.id ||
+              message.type == types.MessageType.image
+          ? const Color(0xfff5f5f7)
+          : Color(0xff48672f),
+      margin: nextMessageInGroup
+          ? const BubbleEdges.symmetric(horizontal: 6)
+          : null,
+      nip: nextMessageInGroup
+          ? BubbleNip.no
+          : _user.id != message.author.id
+              ? BubbleNip.leftBottom
+              : BubbleNip.rightBottom,
+      child: DefaultTextStyle.merge(
+        style: TextStyle(color: Colors.black),
+        child: child,
+      ),
+    );
+  }
 }
 
 class CustomMessageContainer extends StatelessWidget {
@@ -363,7 +390,9 @@ AppBar _appBar(BuildContext context) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => MyApp(pb: pb,),
+            builder: (context) => MyApp(
+              pb: pb,
+            ),
           ),
         );
       },
