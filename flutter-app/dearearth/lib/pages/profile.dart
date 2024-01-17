@@ -6,7 +6,7 @@ import 'package:pocketbase/pocketbase.dart';
 class ProfilePage extends StatelessWidget {
   final PocketBase pb;
 
-  ProfilePage({required this.pb});
+  ProfilePage({super.key, required this.pb});
 
   List<ProfileJourneys> journeys = [];
 
@@ -23,15 +23,15 @@ class ProfilePage extends StatelessWidget {
       body: ListView(
         children: [
           _profileSections(currentUser),
-          SizedBox(
+          const SizedBox(
             height: 60,
           ),
           _topField(),
-          SizedBox(
+          const SizedBox(
             height: 30,
           ),
           _journeysections(),
-          SizedBox(
+          const SizedBox(
             height: 30,
           ),
         ],
@@ -47,7 +47,7 @@ class ProfilePage extends StatelessWidget {
         Container(
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            image: DecorationImage(
+            image: const DecorationImage(
               image: AssetImage('assets/profile/bg.png'),
               fit: BoxFit.cover,
             ),
@@ -55,7 +55,7 @@ class ProfilePage extends StatelessWidget {
           ),
           child: Column(
             children: [
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Padding(
                 padding: const EdgeInsets.only(top: 10, right: 20),
                 child: Row(
@@ -67,16 +67,28 @@ class ProfilePage extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 10, bottom: 20),
                 child: Column(children: [
-                  Image.asset('assets/profile/dummy.png'),
-                  SizedBox(height: 10),
-                  Text(
-                    '${currentUser}',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+                  CircleAvatar(
+                    radius: 48,
+                    backgroundImage: NetworkImage(
+                        (pb.authStore.model as RecordModel)
+                            .getStringValue("avatarUrl")),
                   ),
-                  Text('Email Address')
+                  const SizedBox(height: 10),
+                  Text(
+                    (pb.authStore.model as RecordModel).getStringValue("name"),
+                    style: const TextStyle(
+                        fontSize: 24, fontWeight: FontWeight.w600),
+                  ),
+                  Text((pb.authStore.model as RecordModel)
+                      .getStringValue("email")),
+                  TextButton(
+                      onPressed: () {
+                        pb.authStore.clear();
+                      },
+                      child: const Text("Sign Out"))
                 ]),
               ),
-              SizedBox(height: 30),
+              const SizedBox(height: 30),
             ],
           ),
         ),
@@ -86,7 +98,7 @@ class ProfilePage extends StatelessWidget {
           bottom:
               -30, // Adjust the value to move it down until half of its container
           child: Container(
-            padding: EdgeInsets.all(20),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(15),
@@ -95,30 +107,30 @@ class ProfilePage extends StatelessWidget {
                   color: Colors.grey.withOpacity(0.3),
                   spreadRadius: 2,
                   blurRadius: 7,
-                  offset: Offset(0, 4),
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
+                const Text(
                   'Points',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
-                Text(
-                  '595 xp',
+                const Text(
+                  '0 xp',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
                 Image.asset('assets/icons/exp.png'),
-                SizedBox(width: 10),
-                Text(
+                const SizedBox(width: 10),
+                const Text(
                   'Actions',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
                 Image.asset('assets/icons/leaf.png'),
-                Text(
-                  '10',
+                const Text(
+                  '0',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
               ],
@@ -173,27 +185,27 @@ class ProfilePage extends StatelessWidget {
             ],
           ),
         ),
-        SizedBox(
+        const SizedBox(
           height: 10,
         ),
         Container(
-          padding: EdgeInsets.all(0),
-          margin: EdgeInsets.only(left: 25, right: 25),
+          padding: const EdgeInsets.all(0),
+          margin: const EdgeInsets.only(left: 25, right: 25),
           height: 3 * 165,
           child: ListView.separated(
             itemBuilder: (context, index) {
               return Container(
                 width: 300,
-                margin: EdgeInsets.only(bottom: 15),
+                margin: const EdgeInsets.only(bottom: 15),
                 decoration: BoxDecoration(
-                  color: Color.fromARGB(255, 253, 255, 237),
+                  color: const Color.fromARGB(255, 253, 255, 237),
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Color(0xff4F956F).withOpacity(0.3),
+                      color: const Color(0xff4F956F).withOpacity(0.3),
                       spreadRadius: 0,
                       blurRadius: 2,
-                      offset: Offset(0, 2),
+                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
@@ -210,7 +222,7 @@ class ProfilePage extends StatelessWidget {
                         height: 150,
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       width: 20,
                     ),
                     Expanded(
@@ -229,7 +241,7 @@ class ProfilePage extends StatelessWidget {
                                   children: [
                                     Text(
                                       '${journeys[index].month}\n',
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontSize: 13,
                                         fontWeight: FontWeight.w600,
                                         color: Color(0xff48672f),
@@ -239,7 +251,7 @@ class ProfilePage extends StatelessWidget {
                                       top: 14, // Adjust this value as needed
                                       child: Text(
                                         journeys[index].date,
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                           fontSize:
                                               20, // Set a different font size for '07'
                                           fontWeight: FontWeight.w600,
@@ -249,23 +261,23 @@ class ProfilePage extends StatelessWidget {
                                     ),
                                   ],
                                 ),
-                                SizedBox(
+                                const SizedBox(
                                   width: 10,
                                 ),
                                 Container(
                                   width: 2,
                                   height: 38,
-                                  decoration:
-                                      BoxDecoration(color: Color(0xff48672f)),
+                                  decoration: const BoxDecoration(
+                                      color: Color(0xff48672f)),
                                 ),
-                                SizedBox(
+                                const SizedBox(
                                   width: 10,
                                 ),
                                 Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
+                                    const Text(
                                       "Dear Earth, I will",
                                       style: TextStyle(
                                         fontSize: 14,
@@ -275,7 +287,7 @@ class ProfilePage extends StatelessWidget {
                                     ),
                                     Text(
                                       journeys[index].name,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -284,12 +296,12 @@ class ProfilePage extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            SizedBox(
+                            const SizedBox(
                               height: 5,
                             ),
                             Text(
                               journeys[index].description,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: Color(0xff174A41),
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,
@@ -304,7 +316,7 @@ class ProfilePage extends StatelessWidget {
               );
             },
             itemCount: journeys.length,
-            separatorBuilder: (context, index) => SizedBox(
+            separatorBuilder: (context, index) => const SizedBox(
               width: 0,
             ),
             scrollDirection: Axis.vertical,
@@ -316,17 +328,18 @@ class ProfilePage extends StatelessWidget {
 
   Widget _topField() {
     return Container(
-        margin: EdgeInsets.only(left: 25, right: 25),
-        padding: EdgeInsets.only(left: 30, right: 30, top: 20, bottom: 20),
+        margin: const EdgeInsets.only(left: 25, right: 25),
+        padding:
+            const EdgeInsets.only(left: 30, right: 30, top: 20, bottom: 20),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(15),
-          color: Color(0xffF9FAEF),
+          color: const Color(0xffF9FAEF),
           boxShadow: [
             BoxShadow(
-              color: Color(0xff4F956F).withOpacity(0.3),
+              color: const Color(0xff4F956F).withOpacity(0.3),
               spreadRadius: 0,
               blurRadius: 2,
-              offset: Offset(0, 2),
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -338,7 +351,7 @@ class ProfilePage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               RichText(
-                text: TextSpan(
+                text: const TextSpan(
                   children: [
                     TextSpan(
                       text: '1200 ',
@@ -370,27 +383,29 @@ class ProfilePage extends StatelessWidget {
                   ],
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 5,
               ),
               Container(
-                padding: EdgeInsets.all(0),
+                padding: const EdgeInsets.all(0),
                 child: Stack(
                   alignment: Alignment.centerRight,
                   children: [
                     // Progress bar
                     Container(
-                      padding: EdgeInsets.all(0),
+                      padding: const EdgeInsets.all(0),
                       child: buildProgressBar(
-                          50, BoxConstraints(minWidth: 220.0, maxWidth: 220.0)),
+                          50,
+                          const BoxConstraints(
+                              minWidth: 220.0, maxWidth: 220.0)),
                     ),
 
                     // Background image
                     Container(
                       decoration: BoxDecoration(
-                          color: Color(0xffF8F9FA),
-                          border:
-                              Border.all(color: Color(0xffDAE7C9), width: 3),
+                          color: const Color(0xffF8F9FA),
+                          border: Border.all(
+                              color: const Color(0xffDAE7C9), width: 3),
                           borderRadius: BorderRadius.circular(40)),
                       child: Image.asset(
                         'assets/icons/gift.png', // Replace with your image URL
