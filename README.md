@@ -1,6 +1,6 @@
 # Dear Earth
 
-Climate literacy journaling, supercharged with LLMs.
+Dear Earth addresses the crucial need for engaging and effective climate education for Generation Z, the "digital natives." The climate is an active issue that develops rapidly and simply imparting knowledge is a limited approach. We recognize this and develop Dear Earth, a virtual climate literacy companion that leverages generative Artificial Intelligence (AI) to encourage and reward the user on their climate literacy and climate action journey. Dear Earth is like a virtual therapist: it reminds, motivates, and asks the right questions to empower you to inform yourself and take action. Dear Earth also offers a portal to relevant action opportunities, such as local campaigns, social work and sustainable products, for users to translate their climate literacy into meaningful contributions. Finally, Dear Earth enables users to reflect on their climate journey as a smart journal. This innovative approach directly aligns with the United Nations' Sustainable Development Goals (SDGs) 4 (Quality Education), 11 (Sustainable Cities and Communities), and 13 (Climate Action).
 
 ## Getting Started
 
