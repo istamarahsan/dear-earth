@@ -44,13 +44,14 @@ docker compose up --build
 
 ## Gallery
 
-![](gallery/Screenshot_1705070418.png)
-![](gallery/Screenshot_1705070496.png)
-![](gallery/Screenshot_1705071408.png) 
-![](gallery/Screenshot_1705077236.png) 
+![](gallery/signin.png)
+![](gallery/1.png)
+![](gallery/2.png)
+![](gallery/3.png)
+![](gallery/Screenshot_20240118-165947.png)
+![](gallery/Screenshot_1705070418.png) 
+![](gallery/profile.png) 
 ![](gallery/Screenshot_1705077243.png) 
 ![](gallery/Screenshot_1705077246.png) 
 ![](gallery/Screenshot_1705077249.png) 
 ![](gallery/Screenshot_1705077254.png) 
-![](gallery/Screenshot_1705077258.png) 
-![](gallery/Screenshot_1705077261.png) 
