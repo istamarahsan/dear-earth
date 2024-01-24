@@ -6,9 +6,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	_ "dearearthpb/migrations"
 
@@ -32,22 +34,31 @@ type ChatRequestChatMessage struct {
 	Content string `json:"content"`
 }
 
+type ChatRequestSubmission struct {
+	Caption string `json:"caption"`
+}
+
 type ChatRequest struct {
-	StarterName string                   `json:"starter"`
-	History     []ChatRequestChatMessage `json:"history"`
+	Topic      string                   `json:"topic"`
+	History    []ChatRequestChatMessage `json:"history"`
+	Submission ChatRequestSubmission    `json:"submission"`
 }
 
 type ChatResponse struct {
-	Content string `json:"content"`
+	Content   string `json:"content"`
+	AwardedXp int    `json:"awardedXp"`
+	AwardedAp int    `json:"awardedAp"`
 }
 
-type ChatStarter struct {
-	Name    string
-	Content string
+type JournalTopic struct {
+	Title   string
+	Lead    string
+	Starter string
 }
 
 func main() {
 	ctx := context.Background()
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	gcreds, err := loadGoogleCredentials(ctx)
 
@@ -82,6 +93,7 @@ func main() {
 
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		e.Router.POST("/api/dearearth/chat", func(c echo.Context) error {
+
 			var data ChatRequest
 			err := json.NewDecoder(c.Request().Body).Decode(&data)
 			if err != nil || len(data.History) == 0 {
@@ -93,22 +105,28 @@ func main() {
 				}
 			}
 
-			starterRecord := models.Record{}
-
+			topicRecord := models.Record{}
 			err = app.Dao().
-				RecordQuery("chat_starters").
-				Select("name", "content").
-				AndWhere(dbx.HashExp{"name": data.StarterName}).
+				RecordQuery("journal_topics").
+				Select("title", "lead", "starter").
+				AndWhere(dbx.HashExp{"title": data.Topic}).
 				Limit(1).
 				Build().
-				One(&starterRecord)
+				One(&topicRecord)
 			if err != nil {
 				app.Logger().Debug(err.Error())
-				return c.JSON(http.StatusNotFound, "Starter not found")
+				return c.JSON(http.StatusNotFound, "Topic not found")
 			}
 
-			starter := parseStarter(starterRecord)
-			initialPrompt := constructInitialPrompt(starter, data.History[0].Content)
+			topic := parseTopic(topicRecord)
+			initialPrompt := constructInitialPrompt(topic, data.History[0].Content)
+			awardedXp := 0
+			if r.Intn(1) == 1 {
+				awardedXp = r.Intn(5) + 1
+			}
+			userRecord, _ := c.Get(apis.ContextAuthRecordKey).(*models.Record)
+			userRecord.Set("experience_points", userRecord.GetInt("experience_points")+awardedXp)
+			app.Dao().SaveRecord(userRecord)
 
 			chat := model.StartChat()
 			isFirstMessage := len(data.History) == 1
@@ -119,9 +137,12 @@ func main() {
 					return c.NoContent(http.StatusInternalServerError)
 				}
 				return c.JSON(http.StatusOK, ChatResponse{
-					Content: string(modelResponse.Candidates[0].Content.Parts[0].(genai.Text)),
+					Content:   string(modelResponse.Candidates[0].Content.Parts[0].(genai.Text)),
+					AwardedXp: awardedXp,
+					AwardedAp: 0,
 				})
 			} else {
+
 				history := []*genai.Content{}
 
 				history = append(history, &genai.Content{
@@ -149,7 +170,9 @@ func main() {
 				}
 				responseText := response.Candidates[0].Content.Parts[0].(genai.Text)
 				return c.JSON(http.StatusOK, ChatResponse{
-					Content: string(responseText),
+					Content:   string(responseText),
+					AwardedXp: awardedXp,
+					AwardedAp: 0,
 				})
 			}
 		}, apis.ActivityLogger(app), apis.RequireRecordAuth())
@@ -172,26 +195,31 @@ func (self ChatRequestChatMessage) toContent() genai.Content {
 	}
 }
 
-func parseStarter(rec models.Record) ChatStarter {
-	return ChatStarter{
-		Name:    rec.GetString("name"),
-		Content: rec.GetString("content"),
+func parseTopic(rec models.Record) JournalTopic {
+	return JournalTopic{
+		Title:   rec.GetString("title"),
+		Lead:    rec.GetString("lead"),
+		Starter: rec.GetString("starter"),
 	}
 }
 
-func constructInitialPrompt(starter ChatStarter, userResponse string) string {
+func constructInitialPrompt(topic JournalTopic, userResponse string) string {
 	return fmt.Sprintf(
 		`
-        You are a chatbot designed to help people increase their climate literacy. 
+        Context: You are a chatbot designed to help people increase their climate literacy. 
         You know a lot about the climate, but mainly what you do is to respond to me and ask relevant questions to encourage me to find out more about the topic and also do some self-reflection about my climate literacy. 
         Remember that your job is to ask me questions to encourage me. You can also suggest action according to the topic, but keep them simple. For example, if the topic is about waste management, then you can ask me to sort today's rubbish.
 		For additional context in giving me information, you can ask me in what region or country that I live in. 
-        We are going to have a chat now.
         If I respond in a way that seems out of topic, just reply with "sorry, I don't understand what you mean".
+		The topic is: "%s".
+		You are truthful and never lie. Never make up facts and if you are not completely sure, reply with why you cannot answer in a truthful way.
+		Before you reply, attend, think and remember all the instructions set here.
+        We are going to have a chat now. 
         You just asked me: "%s". 
         Here's my response: "%s"
     	`,
-		starter.Content,
+		topic.Title,
+		topic.Starter,
 		userResponse,
 	)
 }
