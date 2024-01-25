@@ -212,7 +212,6 @@ func constructInitialPrompt(topic JournalTopic, userResponse string) string {
 		For additional context in giving me information, you can ask me in what region or country that I live in. 
         If I respond in a way that seems out of topic, just reply with "sorry, I don't understand what you mean".
 		The topic is: "%s".
-		You are truthful and never lie. Never make up facts and if you are not completely sure, reply with why you cannot answer in a truthful way.
 		Before you reply, attend, think and remember all the instructions set here.
         We are going to have a chat now. 
         You just asked me: "%s". 
