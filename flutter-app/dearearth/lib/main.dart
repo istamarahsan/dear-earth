@@ -33,13 +33,13 @@ Future main() async {
   final chatsData = ChatsData.sqlite(database);
   final chatbotService = ChatbotService(pb: pb);
 
-  final starters = await pb.collection("chat_starters").getFullList();
+  final starters = await pb.collection("journal_topics").getFullList();
   await starters.fold(database.batch(), (batch, starter) {
     batch.insert(
         'chat_starter',
         {
-          'name': starter.getStringValue('name'),
-          'content': starter.getStringValue('content')
+          'name': starter.getStringValue('title'),
+          'content': starter.getStringValue('starter')
         },
         conflictAlgorithm: sql.ConflictAlgorithm.replace);
     return batch;
