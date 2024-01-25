@@ -15,7 +15,7 @@ class ChatbotService {
     final response = await http.post(pb.buildUrl("/api/dearearth/chat"),
         headers: headers,
         body: jsonEncode({
-          "starter": chat.starter.name,
+          "topic": chat.starter.name,
           "history": chatHistory == null
               ? baseMessage
               : [
