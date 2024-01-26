@@ -19,12 +19,12 @@ extension _DateTimeExt on DateTime {
 
 class HomePage extends StatefulWidget {
   final PocketBase pb;
-  final ChatsData chatsData;
+  final EntriesData entriesData;
   final ChatbotService chatbotService;
   const HomePage(
       {super.key,
       required this.pb,
-      required this.chatsData,
+      required this.entriesData,
       required this.chatbotService});
 
   @override
@@ -32,27 +32,27 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<Chat>? activeChats;
-  List<ChatStarter>? availableStarters;
+  List<Entry>? activeEntries;
+  List<Topic>? availableTopics;
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    widget.chatsData
-        .getChats()
-        .then((chats) =>
-            chats.where((it) => it.status == ChatStatus.active).toList())
-        .then((chats) async {
-      final allStarters = await widget.chatsData.getChatStarters();
-      final availableStarters = allStarters
-          .where((starter) =>
-              chats.none((chat) => chat.starter.name == starter.name))
+    widget.entriesData
+        .getEntries()
+        .then((entries) =>
+            entries.where((it) => it.status == EntryStatus.active).toList())
+        .then((entries) async {
+      final allTopics = await widget.entriesData.getTopics();
+      final availableTopics = allTopics
+          .where((topic) =>
+              entries.none((entry) => entry.topic.title == topic.title))
           .toList();
       setState(() {
-        activeChats = chats;
-        this.availableStarters = availableStarters;
+        activeEntries = entries;
+        this.availableTopics = availableTopics;
       });
     });
   }
@@ -79,7 +79,7 @@ class _HomePageState extends State<HomePage> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              (activeChats?.isNotEmpty ?? false)
+              (activeEntries?.isNotEmpty ?? false)
                   ? const Column(
                       children: [
                         Padding(
@@ -99,17 +99,17 @@ class _HomePageState extends State<HomePage> {
                     )
                   : Container(),
               Column(
-                children: activeChats
-                        ?.mapIndexed((i, chat) => TextButton(
+                children: activeEntries
+                        ?.mapIndexed((i, entry) => TextButton(
                             onPressed: () {
                               Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) => ChatPage(
                                         pb: widget.pb,
-                                        chatsData: widget.chatsData,
+                                        entriesData: widget.entriesData,
                                         chatbotService: widget.chatbotService,
-                                        chat: activeChats![i])),
+                                        entry: activeEntries![i])),
                               );
                             },
                             child: Container(
@@ -137,7 +137,7 @@ class _HomePageState extends State<HomePage> {
                                   const SizedBox(width: 20),
                                   SizedBox(
                                       width: 200,
-                                      child: Text(chat.starter.name)),
+                                      child: Text(entry.topic.lead)),
                                   const SizedBox(width: 30),
                                   Image.asset("assets/icons/next_bordered.png")
                                 ],
@@ -162,7 +162,7 @@ class _HomePageState extends State<HomePage> {
 
   Column _topicsSections() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      availableStarters?.isEmpty == true
+      availableTopics?.isEmpty == true
           ? Container()
           : const Column(
               children: [
@@ -187,13 +187,13 @@ class _HomePageState extends State<HomePage> {
       Container(
         padding: const EdgeInsets.all(0),
         height: 240,
-        child: availableStarters == null
+        child: availableTopics == null
             ? const SizedBox.shrink()
             : ListView.separated(
                 itemBuilder: (context, index) {
                   return Container(
                       width: 210,
-                      margin: index == availableStarters!.length - 1
+                      margin: index == availableTopics!.length - 1
                           ? const EdgeInsets.only(left: 25, right: 25)
                           : const EdgeInsets.only(left: 25),
                       decoration: BoxDecoration(
@@ -210,7 +210,7 @@ class _HomePageState extends State<HomePage> {
                               child: Column(
                                 children: [
                                   Text(
-                                    availableStarters![index].name,
+                                    availableTopics![index].title,
                                     style: const TextStyle(
                                         color: Colors.white,
                                         fontSize: 20,
@@ -221,7 +221,7 @@ class _HomePageState extends State<HomePage> {
                                     height: 10,
                                   ),
                                   Text(
-                                    availableStarters![index].content,
+                                    availableTopics![index].lead,
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 12,
@@ -237,20 +237,20 @@ class _HomePageState extends State<HomePage> {
                                   const EdgeInsets.only(left: 30, right: 30),
                               child: TextButton(
                                 onPressed: () async {
-                                  final createdChat = await widget.chatsData
-                                      .createChat(
-                                          starterName:
-                                              availableStarters![index].name,
+                                  final createdChat = await widget.entriesData
+                                      .createEntry(
+                                          topicTitle:
+                                              availableTopics![index].title,
                                           now: DateTime.now());
                                   Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
                                         builder: (context) => ChatPage(
                                             pb: widget.pb,
-                                            chatsData: widget.chatsData,
+                                            entriesData: widget.entriesData,
                                             chatbotService:
                                                 widget.chatbotService,
-                                            chat: createdChat)),
+                                            entry: createdChat)),
                                   );
                                 },
                                 style: TextButton.styleFrom(
@@ -266,7 +266,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ));
                 },
-                itemCount: availableStarters!.length,
+                itemCount: availableTopics!.length,
                 separatorBuilder: (context, index) => const SizedBox(
                   width: 0,
                 ),
@@ -278,8 +278,8 @@ class _HomePageState extends State<HomePage> {
 
   Container _headerSection(BuildContext context) {
     final now = DateTime.now();
-    return activeChats == null ||
-            activeChats!.any((it) => it.started.onLocalSameDay(now))
+    return activeEntries == null ||
+            activeEntries!.any((it) => it.started.onLocalSameDay(now))
         ? Container()
         : Container(
             margin: const EdgeInsets.only(left: 25, right: 25),
@@ -329,20 +329,21 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     TextButton(
                       onPressed: () async {
-                        if (availableStarters!.isEmpty) {
+                        if (availableTopics!.isEmpty) {
                           return;
                         }
-                        final createdChat = await widget.chatsData.createChat(
-                            starterName: availableStarters!.first.name,
-                            now: DateTime.now());
+                        final createdEntry = await widget.entriesData
+                            .createEntry(
+                                topicTitle: availableTopics!.first.title,
+                                now: DateTime.now());
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
                               builder: (context) => ChatPage(
                                   pb: widget.pb,
-                                  chatsData: widget.chatsData,
+                                  entriesData: widget.entriesData,
                                   chatbotService: widget.chatbotService,
-                                  chat: createdChat)),
+                                  entry: createdEntry)),
                         );
                       },
                       style: TextButton.styleFrom(
@@ -375,12 +376,13 @@ class _HomePageState extends State<HomePage> {
                 Row(
                   children: [
                     Image.asset(
-                      "assets/icons/notif.png",
+                      "assets/icons/exp.png",
                       width: 20,
                       height: 20,
                     ),
-                    const Text("0 xp",
-                        style: TextStyle(
+                    Text(
+                        "${(widget.pb.authStore.model as RecordModel).getIntValue('experiencePoints')} xp",
+                        style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                         )),
@@ -423,7 +425,7 @@ class _HomePageState extends State<HomePage> {
                 // Progress bar
                 Container(
                   padding: const EdgeInsets.all(0),
-                  child: buildProgressBar(50,
+                  child: buildProgressBar(0,
                       const BoxConstraints(minWidth: 150.0, maxWidth: 160.0)),
                 ),
 
@@ -450,38 +452,18 @@ class _HomePageState extends State<HomePage> {
 
   AppBar _appBar() {
     return AppBar(
-      title: const Padding(
-        padding: EdgeInsets.only(left: 8),
-        child: Text(
-          'Magic Journal 🍃✨',
-          style: TextStyle(
-              color: Color(0xff174A41),
-              fontSize: 22,
-              fontWeight: FontWeight.w600),
+        title: const Padding(
+          padding: EdgeInsets.only(left: 8),
+          child: Text(
+            'Magic Journal 🍃✨',
+            style: TextStyle(
+                color: Color(0xff174A41),
+                fontSize: 22,
+                fontWeight: FontWeight.w600),
+          ),
         ),
-      ),
-      backgroundColor: Colors.white,
-      elevation: 0.0,
-      centerTitle: false,
-      actions: [
-        GestureDetector(
-          onTap: () {},
-          child: Container(
-              alignment: Alignment.center,
-              margin: const EdgeInsets.only(right: 20, top: 10, bottom: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Image.asset(
-                    'assets/icons/notif.png',
-                    height: 30,
-                    width: 30,
-                  ),
-                ],
-              )),
-        ),
-      ],
-    );
+        backgroundColor: Colors.white,
+        elevation: 0.0,
+        centerTitle: false);
   }
 }

@@ -4,7 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:dearearth/journal/journal.dart' as journal;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
+import 'package:flutter_chat_types/flutter_chat_types.dart' as chat;
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
@@ -20,33 +20,35 @@ import 'package:pocketbase/pocketbase.dart';
 class ChatPage extends StatefulWidget {
   final PocketBase pb;
   final journal.ChatbotService chatbotService;
-  final journal.Chat chat;
-  final journal.ChatsData chatsData;
+  final journal.Entry entry;
+  final journal.EntriesData entriesData;
   const ChatPage(
       {super.key,
       required this.pb,
       required this.chatbotService,
-      required this.chat,
-      required this.chatsData});
+      required this.entry,
+      required this.entriesData});
 
   @override
   State<ChatPage> createState() => _ChatPageState();
 }
 
 class _ChatPageState extends State<ChatPage> {
-  types.User modelUser = const types.User(id: "model");
-  types.User currentUser = const types.User(id: "user");
-  final List<types.Message> _messages = [];
+  chat.User modelUser = const chat.User(id: "model");
+  chat.User currentUser = const chat.User(id: "user");
+  final List<chat.Message> _messages = [];
+  int xp = 0;
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
+    xp = widget.entry.awardedExperiencePoints;
     _fetchAndLoadChatHistory();
   }
 
-  void _addMessage(types.Message message) {
+  void _addMessage(chat.Message message) {
     setState(() {
       _messages.insert(0, message);
     });
@@ -54,18 +56,18 @@ class _ChatPageState extends State<ChatPage> {
 
   void _fetchAndLoadChatHistory() async {
     final messages =
-        await widget.chatsData.getChatMessages(chatId: widget.chat.id);
+        await widget.entriesData.getEntryMessages(entryId: widget.entry.id);
     final messagesAreSorted = messages.isSortedBy((msg) => msg.timestamp);
     final messagesSorted = messagesAreSorted
         ? messages
         : messages.sortedBy((msg) => msg.timestamp).toList();
-    final starterMessage = types.TextMessage(
+    final starterMessage = chat.TextMessage(
         author: modelUser,
-        id: widget.chat.started.toIso8601String(),
-        createdAt: widget.chat.started.millisecondsSinceEpoch,
-        text: widget.chat.starter.content);
+        id: widget.entry.started.toIso8601String(),
+        createdAt: widget.entry.started.millisecondsSinceEpoch,
+        text: widget.entry.topic.starter);
     final convertedMessages = messagesSorted
-        .map((e) => types.TextMessage(
+        .map((e) => chat.TextMessage(
             author: e.role == journal.ChatRole.model ? modelUser : currentUser,
             id: e.timestamp.toIso8601String(),
             createdAt: e.timestamp.millisecondsSinceEpoch,
@@ -130,7 +132,7 @@ class _ChatPageState extends State<ChatPage> {
     );
 
     if (result != null && result.files.single.path != null) {
-      final message = types.FileMessage(
+      final message = chat.FileMessage(
         author: currentUser,
         createdAt: DateTime.now().millisecondsSinceEpoch,
         id: const Uuid().v4(),
@@ -155,7 +157,7 @@ class _ChatPageState extends State<ChatPage> {
       final bytes = await result.readAsBytes();
       final image = await decodeImageFromList(bytes);
 
-      final message = types.ImageMessage(
+      final message = chat.ImageMessage(
         author: currentUser,
         createdAt: DateTime.now().millisecondsSinceEpoch,
         height: image.height.toDouble(),
@@ -170,8 +172,8 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
-  void _handleMessageTap(BuildContext _, types.Message message) async {
-    if (message is types.FileMessage) {
+  void _handleMessageTap(BuildContext _, chat.Message message) async {
+    if (message is chat.FileMessage) {
       var localPath = message.uri;
 
       if (message.uri.startsWith('http')) {
@@ -179,7 +181,7 @@ class _ChatPageState extends State<ChatPage> {
           final index =
               _messages.indexWhere((element) => element.id == message.id);
           final updatedMessage =
-              (_messages[index] as types.FileMessage).copyWith(
+              (_messages[index] as chat.FileMessage).copyWith(
             isLoading: true,
           );
 
@@ -201,7 +203,7 @@ class _ChatPageState extends State<ChatPage> {
           final index =
               _messages.indexWhere((element) => element.id == message.id);
           final updatedMessage =
-              (_messages[index] as types.FileMessage).copyWith(
+              (_messages[index] as chat.FileMessage).copyWith(
             isLoading: null,
           );
 
@@ -216,11 +218,11 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void _handlePreviewDataFetched(
-    types.TextMessage message,
-    types.PreviewData previewData,
+    chat.TextMessage message,
+    chat.PreviewData previewData,
   ) {
     final index = _messages.indexWhere((element) => element.id == message.id);
-    final updatedMessage = (_messages[index] as types.TextMessage).copyWith(
+    final updatedMessage = (_messages[index] as chat.TextMessage).copyWith(
       previewData: previewData,
     );
 
@@ -229,36 +231,46 @@ class _ChatPageState extends State<ChatPage> {
     });
   }
 
-  void _handleSendPressed(types.PartialText message) async {
+  void _handleSendPressed(chat.PartialText message) async {
     final now = DateTime.now();
 
-    _addMessage(types.TextMessage(
+    _addMessage(chat.TextMessage(
         author: currentUser,
         id: now.toIso8601String(),
         createdAt: now.millisecondsSinceEpoch,
         text: message.text));
 
     final chatHistory =
-        await widget.chatsData.getChatMessages(chatId: widget.chat.id);
+        await widget.entriesData.getEntryMessages(entryId: widget.entry.id);
     final response = await widget.chatbotService
-        .send(widget.chat, message.text, chatHistory);
+        .send(widget.entry, message.text, chatHistory);
 
-    await widget.chatsData.addMessageToChat(
-        chatId: widget.chat.id,
+    await widget.entriesData.addMessageToEntry(
+        entryId: widget.entry.id,
         content: message.text,
         role: journal.ChatRole.user,
         timestamp: now);
-    final modelResponse = await widget.chatsData.addMessageToChat(
-        chatId: widget.chat.id,
-        content: response,
+    final modelResponse = await widget.entriesData.addMessageToEntry(
+        entryId: widget.entry.id,
+        content: response.content,
         role: journal.ChatRole.model,
         timestamp: DateTime.now());
 
-    _addMessage(types.TextMessage(
+    _addMessage(chat.TextMessage(
         author: modelUser,
         id: modelResponse.timestamp.toIso8601String(),
         createdAt: modelResponse.timestamp.millisecondsSinceEpoch,
         text: modelResponse.content));
+
+    if (response.awardedExperiencePoints > 0) {
+      setState(() {
+        xp += response.awardedExperiencePoints;
+      });
+      await widget.entriesData.updateEntryXp(
+          entryId: widget.entry.id,
+          awardedExperiencePoints: widget.entry.awardedExperiencePoints +
+              response.awardedExperiencePoints);
+    }
   }
 
   @override
@@ -267,7 +279,6 @@ class _ChatPageState extends State<ChatPage> {
           key: _scaffoldKey,
           appBar: _appBar(
             context,
-            widget.chat,
             onBackPressed: () {
               Navigator.pushReplacement(
                 context,
@@ -275,7 +286,7 @@ class _ChatPageState extends State<ChatPage> {
                   builder: (context) => DearEarthApp(
                       pb: widget.pb,
                       chatbotService: widget.chatbotService,
-                      chatsData: widget.chatsData),
+                      entriesData: widget.entriesData),
                 ),
               );
             },
@@ -301,7 +312,7 @@ class _ChatPageState extends State<ChatPage> {
   }) {
     return Bubble(
       color: currentUser.id != message.author.id ||
-              message.type == types.MessageType.image
+              message.type == chat.MessageType.image
           ? const Color(0xfff5f5f7)
           : const Color(0xff48672f),
       margin: nextMessageInGroup
@@ -316,6 +327,108 @@ class _ChatPageState extends State<ChatPage> {
         style: const TextStyle(color: Colors.black),
         child: child,
       ),
+    );
+  }
+
+  AppBar _appBar(BuildContext context, {void Function()? onBackPressed}) {
+    return AppBar(
+      title: Padding(
+        padding: const EdgeInsets.only(left: 0),
+        child: Row(
+          children: [
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                Text(
+                  '${_shortMonthName(widget.entry.started).toUpperCase()}\n',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xff48672f),
+                  ),
+                ),
+                Positioned(
+                  top: 14, // Adjust this value as needed
+                  child: Text(
+                    widget.entry.started.day < 10
+                        ? "0${widget.entry.started.day}"
+                        : widget.entry.started.day.toString(),
+                    style: const TextStyle(
+                      fontSize: 20, // Set a different font size for '07'
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xff48672f),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(
+              width: 10,
+            ),
+            Container(
+              width: 2,
+              height: 38,
+              decoration: const BoxDecoration(color: Color(0xff48672f)),
+            ),
+            const SizedBox(
+              width: 10,
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.entry.topic.title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      backgroundColor: Colors.white,
+      elevation: 0.0,
+      centerTitle: false,
+      leading: IconButton(
+          icon: const Icon(Icons.arrow_back), onPressed: onBackPressed),
+      actions: [
+        GestureDetector(
+          onTap: () {},
+          child: Container(
+            alignment: Alignment.center,
+            margin: const EdgeInsets.only(right: 20, top: 10, bottom: 10),
+            padding:
+                const EdgeInsets.only(right: 15, top: 8, bottom: 8, left: 15),
+            decoration: BoxDecoration(
+                color: const Color(0xff48672f),
+                borderRadius: BorderRadius.circular(40)),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/icons/exp_white.png',
+                  height: 20,
+                  width: 20,
+                ),
+                const SizedBox(
+                  width: 5,
+                ),
+                Text(
+                  '$xp xp',
+                  style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white),
+                )
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -361,107 +474,4 @@ String _shortMonthName(DateTime dateTime) {
     12: 'Dec',
   };
   return monthNames[dateTime.month]!;
-}
-
-AppBar _appBar(BuildContext context, journal.Chat chat,
-    {void Function()? onBackPressed}) {
-  return AppBar(
-    title: Padding(
-      padding: const EdgeInsets.only(left: 0),
-      child: Row(
-        children: [
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              Text(
-                '${_shortMonthName(chat.started).toUpperCase()}\n',
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xff48672f),
-                ),
-              ),
-              Positioned(
-                top: 14, // Adjust this value as needed
-                child: Text(
-                  chat.started.day < 10
-                      ? "0$chat.started.day"
-                      : chat.started.day.toString(),
-                  style: const TextStyle(
-                    fontSize: 20, // Set a different font size for '07'
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xff48672f),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(
-            width: 10,
-          ),
-          Container(
-            width: 2,
-            height: 38,
-            decoration: const BoxDecoration(color: Color(0xff48672f)),
-          ),
-          const SizedBox(
-            width: 10,
-          ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                chat.starter.name,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    ),
-    backgroundColor: Colors.white,
-    elevation: 0.0,
-    centerTitle: false,
-    leading: IconButton(
-        icon: const Icon(Icons.arrow_back), onPressed: onBackPressed),
-    actions: [
-      GestureDetector(
-        onTap: () {},
-        child: Container(
-          alignment: Alignment.center,
-          margin: const EdgeInsets.only(right: 20, top: 10, bottom: 10),
-          padding:
-              const EdgeInsets.only(right: 15, top: 8, bottom: 8, left: 15),
-          decoration: BoxDecoration(
-              color: const Color(0xff48672f),
-              borderRadius: BorderRadius.circular(40)),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Image.asset(
-                'assets/icons/exp_white.png',
-                height: 20,
-                width: 20,
-              ),
-              const SizedBox(
-                width: 5,
-              ),
-              const Text(
-                '0 xp',
-                style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white),
-              )
-            ],
-          ),
-        ),
-      ),
-    ],
-  );
 }

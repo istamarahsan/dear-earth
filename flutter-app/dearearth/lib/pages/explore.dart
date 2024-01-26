@@ -2,15 +2,19 @@ import 'package:dearearth/models/explore_change_maker.dart';
 import 'package:dearearth/models/explore_impacts.dart';
 import 'package:dearearth/models/explore_shop.dart';
 import 'package:flutter/material.dart';
+import 'package:pocketbase/pocketbase.dart';
 
 class ExplorePage extends StatelessWidget {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final PocketBase pb;
 
   List<ExploreImpacts> impacts = [];
   List<ExploreShops> shops = [];
   List<ExploreChangeMakers> makers = [];
 
   TextEditingController _searchController = TextEditingController();
+
+  ExplorePage({Key? key, required this.pb}) : super(key: key);
 
   void __getInitialInfo() {
     impacts = ExploreImpacts.getImpacts();
@@ -80,14 +84,7 @@ class ExplorePage extends StatelessWidget {
                   textAlign: TextAlign.start,
                 ),
               ],
-            ),
-            Text(
-              'View All',
-              style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600),
-            ),
+            )
           ],
         ),
       ),
@@ -95,17 +92,18 @@ class ExplorePage extends StatelessWidget {
         height: 15,
       ),
       Container(
-        padding: EdgeInsets.all(0),
+        padding: const EdgeInsets.all(0),
         height: 150,
         child: ListView.separated(
+          primary: false,
           itemBuilder: (context, index) {
             return Container(
               width: 300,
               margin: () {
                 if (index == makers.length - 1) {
-                  return EdgeInsets.only(left: 25, right: 25);
+                  return const EdgeInsets.only(left: 25, right: 25);
                 } else {
-                  return EdgeInsets.only(left: 25);
+                  return const EdgeInsets.only(left: 25);
                 }
               }(),
               decoration: BoxDecoration(
@@ -117,7 +115,7 @@ class ExplorePage extends StatelessWidget {
             );
           },
           itemCount: makers.length,
-          separatorBuilder: (context, index) => SizedBox(
+          separatorBuilder: (context, index) => const SizedBox(
             width: 0,
           ),
           scrollDirection: Axis.horizontal,
@@ -155,14 +153,7 @@ class ExplorePage extends StatelessWidget {
                   textAlign: TextAlign.start,
                 ),
               ],
-            ),
-            Text(
-              'View All',
-              style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600),
-            ),
+            )
           ],
         ),
       ),
@@ -170,21 +161,22 @@ class ExplorePage extends StatelessWidget {
         height: 15,
       ),
       Container(
-        padding: EdgeInsets.all(0),
+        padding: const EdgeInsets.all(0),
         height: 300,
         child: ListView.separated(
+          primary: false,
           itemBuilder: (context, index) {
             return Container(
               width: 200,
               height: 200,
               decoration: BoxDecoration(
-                  color: Color(0xffD9DBD0),
+                  color: const Color(0xffD9DBD0),
                   borderRadius: BorderRadius.circular(30)),
               margin: () {
                 if (index == shops.length - 1) {
-                  return EdgeInsets.only(left: 25, right: 25);
+                  return const EdgeInsets.only(left: 25, right: 25);
                 } else {
-                  return EdgeInsets.only(left: 25);
+                  return const EdgeInsets.only(left: 25);
                 }
               }(),
               child: Column(
@@ -209,7 +201,7 @@ class ExplorePage extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.all(8.0),
                             decoration: BoxDecoration(
-                                color: Color(0xff48672f),
+                                color: const Color(0xff48672f),
                                 borderRadius: BorderRadius.circular(40)),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -220,12 +212,12 @@ class ExplorePage extends StatelessWidget {
                                   height: 20,
                                   width: 20,
                                 ),
-                                SizedBox(
+                                const SizedBox(
                                   width: 5,
                                 ),
                                 Text(
                                   shops[index].exp,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
                                       color: Colors.white),
@@ -242,22 +234,22 @@ class ExplorePage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(height: 5,),
+                        const SizedBox(height: 5,),
                         Text(
                           shops[index].name,
-                          style: TextStyle(fontSize: 18,fontWeight: FontWeight.w600),
+                          style: const TextStyle(fontSize: 18,fontWeight: FontWeight.w600),
                           textAlign: TextAlign.start,
                         ),
-                        SizedBox(height: 5,),
+                        const SizedBox(height: 5,),
                         Text(
                           shops[index].description,
-                          style: TextStyle(fontSize: 14,fontWeight: FontWeight.w600),
+                          style: const TextStyle(fontSize: 14,fontWeight: FontWeight.w600),
                           textAlign: TextAlign.start,
                         ),
-                        SizedBox(height: 5,),
+                        const SizedBox(height: 5,),
                         Text(
                           shops[index].price,
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold),
                           textAlign: TextAlign.start,
                         )
@@ -269,7 +261,7 @@ class ExplorePage extends StatelessWidget {
             );
           },
           itemCount: shops.length,
-          separatorBuilder: (context, index) => SizedBox(
+          separatorBuilder: (context, index) => const SizedBox(
             width: 0,
           ),
           scrollDirection: Axis.horizontal,
@@ -308,13 +300,6 @@ class ExplorePage extends StatelessWidget {
                 ),
               ],
             ),
-            Text(
-              'View All',
-              style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600),
-            ),
           ],
         ),
       ),
@@ -322,17 +307,18 @@ class ExplorePage extends StatelessWidget {
         height: 15,
       ),
       Container(
-        padding: EdgeInsets.all(0),
+        padding: const EdgeInsets.all(0),
         height: 240,
         child: ListView.separated(
+          primary: false,
           itemBuilder: (context, index) {
             return Container(
               width: 200,
               margin: () {
                 if (index == impacts.length - 1) {
-                  return EdgeInsets.only(left: 25, right: 25);
+                  return const EdgeInsets.only(left: 25, right: 25);
                 } else {
-                  return EdgeInsets.only(left: 25);
+                  return const EdgeInsets.only(left: 25);
                 }
               }(),
               decoration: BoxDecoration(
@@ -344,7 +330,7 @@ class ExplorePage extends StatelessWidget {
             );
           },
           itemCount: impacts.length,
-          separatorBuilder: (context, index) => SizedBox(
+          separatorBuilder: (context, index) => const SizedBox(
             width: 0,
           ),
           scrollDirection: Axis.horizontal,
@@ -355,13 +341,13 @@ class ExplorePage extends StatelessWidget {
 
   Widget _searchField() {
     return Container(
-      margin: EdgeInsets.only(left: 25,right: 25),
+      margin: const EdgeInsets.only(left: 25,right: 25),
       child: TextField(
         controller: _searchController,
         decoration: InputDecoration(
           labelText: "NGO, Advocacy group, eco-products, ...",
           hintText: "NGO, Advocacy group, eco-products, ...",
-          prefixIcon: Icon(Icons.search),
+          prefixIcon: const Icon(Icons.search),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(40),
           ),
@@ -377,8 +363,8 @@ class ExplorePage extends StatelessWidget {
 
   AppBar _appBar() {
     return AppBar(
-      title: Padding(
-        padding: const EdgeInsets.only(left: 8),
+      title: const Padding(
+        padding: EdgeInsets.only(left: 8),
         child: Text(
           'Co-Link Earthian 🌍🤝',
           style: TextStyle(
@@ -395,10 +381,10 @@ class ExplorePage extends StatelessWidget {
           onTap: () {},
           child: Container(
             alignment: Alignment.center,
-            margin: EdgeInsets.only(right: 20, top: 10, bottom: 10),
-            padding: EdgeInsets.only(right: 15, top: 8, bottom: 8, left: 15),
+            margin: const EdgeInsets.only(right: 20, top: 10, bottom: 10),
+            padding: const EdgeInsets.only(right: 15, top: 8, bottom: 8, left: 15),
             decoration: BoxDecoration(
-                color: Color(0xffF8F9FA),
+                color: const Color(0xffF8F9FA),
                 borderRadius: BorderRadius.circular(40)),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -409,12 +395,12 @@ class ExplorePage extends StatelessWidget {
                   height: 20,
                   width: 20,
                 ),
-                SizedBox(
+                const SizedBox(
                   width: 5,
                 ),
                 Text(
-                  '595 xp',
-                  style: TextStyle(
+                  '${(pb.authStore.model as RecordModel).getIntValue('experiencePoints')} xp',
+                  style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: Colors.black),

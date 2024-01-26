@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -120,12 +121,14 @@ func main() {
 
 			topic := parseTopic(topicRecord)
 			initialPrompt := constructInitialPrompt(topic, data.History[0].Content)
-			awardedXp := 0
-			if r.Intn(1) == 1 {
-				awardedXp = r.Intn(5) + 1
-			}
+
 			userRecord, _ := c.Get(apis.ContextAuthRecordKey).(*models.Record)
-			userRecord.Set("experience_points", userRecord.GetInt("experience_points")+awardedXp)
+			awardedXp := 0
+			if r.Intn(2) == 1 {
+				awardedXp = r.Intn(5) + 1
+				app.Logger().Info("Awarded XP", "awardedXp", strconv.Itoa(awardedXp), "recipient", userRecord.Id)
+			}
+			userRecord.Set("experiencePoints", userRecord.GetInt("experiencePoints")+awardedXp)
 			app.Dao().SaveRecord(userRecord)
 
 			chat := model.StartChat()

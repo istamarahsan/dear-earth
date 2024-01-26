@@ -21,7 +21,8 @@ import 'package:sqflite/sql.dart' as sql;
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  const pbUrl = String.fromEnvironment('PB_URL', defaultValue: "https://pb.dearearth.app");
+  const pbUrl = String.fromEnvironment('PB_URL',
+      defaultValue: "https://pb.dearearth.app");
   final pb = PocketBase(pbUrl);
 
   final currentDatabaseVersion = await getCurrentDatabaseVersion(rootBundle);
@@ -30,23 +31,24 @@ Future main() async {
       path: join(databasesPath, 'dearearth.db'),
       version: currentDatabaseVersion);
 
-  final chatsData = ChatsData.sqlite(database);
+  final entriesData = EntriesData.sqlite(database);
   final chatbotService = ChatbotService(pb: pb);
 
-  final starters = await pb.collection("journal_topics").getFullList();
-  await starters.fold(database.batch(), (batch, starter) {
+  final topics = await pb.collection("journal_topics").getFullList();
+  await topics.fold(database.batch(), (batch, topic) {
     batch.insert(
-        'chat_starter',
+        'journal_topic',
         {
-          'name': starter.getStringValue('title'),
-          'content': starter.getStringValue('starter')
+          'title': topic.getStringValue('title'),
+          'lead': topic.getStringValue('lead'),
+          'starter': topic.getStringValue('starter'),
         },
         conflictAlgorithm: sql.ConflictAlgorithm.replace);
     return batch;
   }).commit(noResult: true);
 
   runApp(DearEarthApp(
-      pb: pb, chatbotService: chatbotService, chatsData: chatsData));
+      pb: pb, chatbotService: chatbotService, entriesData: entriesData));
 }
 
 Future<sqflite.Database> openDatabase(
@@ -122,12 +124,12 @@ List<String> parseMigrationStatements(String raw) {
 class DearEarthApp extends StatefulWidget {
   final PocketBase pb;
   final ChatbotService chatbotService;
-  final ChatsData chatsData;
+  final EntriesData entriesData;
   const DearEarthApp(
       {Key? key,
       required this.pb,
       required this.chatbotService,
-      required this.chatsData})
+      required this.entriesData})
       : super(key: key);
 
   @override
@@ -149,9 +151,11 @@ class DearEarthAppState extends State<DearEarthApp> {
       HomePage(
           pb: widget.pb,
           chatbotService: widget.chatbotService,
-          chatsData: widget.chatsData),
+          entriesData: widget.entriesData),
       EvaluatePage(),
-      ExplorePage(),
+      ExplorePage(
+        pb: widget.pb,
+      ),
       ProfilePage(pb: widget.pb)
     ];
   }

@@ -1,11 +1,21 @@
 part of journal;
 
+class ChatbotResponse {
+  final String content;
+  final int awardedExperiencePoints;
+  final int awardedActionPoints;
+  ChatbotResponse(
+      {required this.content,
+      required this.awardedExperiencePoints,
+      required this.awardedActionPoints});
+}
+
 class ChatbotService {
   final PocketBase pb;
   ChatbotService({required this.pb});
 
-  Future<String> send(
-      Chat chat, String message, List<ChatMessage>? chatHistory) async {
+  Future<ChatbotResponse> send(
+      Entry chat, String message, List<Message>? chatHistory) async {
     final token = pb.authStore.token;
     final headers = {
       'Authorization': 'Bearer $token',
@@ -15,7 +25,7 @@ class ChatbotService {
     final response = await http.post(pb.buildUrl("/api/dearearth/chat"),
         headers: headers,
         body: jsonEncode({
-          "topic": chat.starter.name,
+          "topic": chat.topic.title,
           "history": chatHistory == null
               ? baseMessage
               : [
@@ -25,11 +35,16 @@ class ChatbotService {
                       })),
                   baseMessage
                 ],
+          "submission": null
         }));
     if (response.statusCode != 200) {
       throw Exception(
           "Request to chat service failed with status code ${response.statusCode}");
     }
-    return jsonDecode(response.body)["content"];
+    final decoded = jsonDecode(response.body);
+    return ChatbotResponse(
+        content: decoded["content"] as String,
+        awardedExperiencePoints: decoded["awardedXp"] as int,
+        awardedActionPoints: decoded["awardedAp"] as int);
   }
 }

@@ -118,9 +118,10 @@ class ProfilePage extends StatelessWidget {
                   'Points',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
-                const Text(
-                  '0 xp',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                Text(
+                  '${(pb.authStore.model as RecordModel).getIntValue('experiencePoints')} xp',
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w500),
                 ),
                 Image.asset('assets/icons/exp.png'),
                 const SizedBox(width: 10),
@@ -129,9 +130,12 @@ class ProfilePage extends StatelessWidget {
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
                 Image.asset('assets/icons/leaf.png'),
-                const Text(
-                  '0',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                Text(
+                  (pb.authStore.model as RecordModel)
+                      .getIntValue('actionPoints')
+                      .toString(),
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w500),
                 ),
               ],
             ),
@@ -174,14 +178,7 @@ class ProfilePage extends StatelessWidget {
                     textAlign: TextAlign.start,
                   ),
                 ],
-              ),
-              Text(
-                'View All',
-                style: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600),
-              ),
+              )
             ],
           ),
         ),
@@ -193,6 +190,7 @@ class ProfilePage extends StatelessWidget {
           margin: const EdgeInsets.only(left: 25, right: 25),
           height: 3 * 165,
           child: ListView.separated(
+            primary: false,
             itemBuilder: (context, index) {
               return Container(
                 width: 300,
@@ -354,7 +352,7 @@ class ProfilePage extends StatelessWidget {
                 text: const TextSpan(
                   children: [
                     TextSpan(
-                      text: '1200 ',
+                      text: '--  r',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight:
@@ -395,7 +393,7 @@ class ProfilePage extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(0),
                       child: buildProgressBar(
-                          50,
+                          0,
                           const BoxConstraints(
                               minWidth: 220.0, maxWidth: 220.0)),
                     ),

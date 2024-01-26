@@ -76,6 +76,7 @@ class EvaluatePage extends StatelessWidget {
           margin: EdgeInsets.only( left: 25, right: 25),
           height: 470,
           child: ListView.separated(
+            primary: false,
             itemBuilder: (context, index) {
               return Container(
                 width: 300,

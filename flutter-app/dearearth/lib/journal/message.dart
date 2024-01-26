@@ -8,12 +8,12 @@ extension ChatRoleExt on ChatRole {
   }
 }
 
-class ChatMessage {
+class Message {
   final ChatRole role;
   final String content;
   final DateTime timestamp;
 
-  const ChatMessage({
+  const Message({
     required this.role,
     required this.content,
     required this.timestamp

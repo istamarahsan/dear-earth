@@ -1,10 +1,10 @@
 part of journal;
 
-class ChatSubmission {
+class EntrySubmission {
   final Uri attachmentUri;
   final String caption;
 
-  const ChatSubmission({
+  const EntrySubmission({
     required this.attachmentUri,
     required this.caption
   });

@@ -6,10 +6,11 @@ import 'package:collection/collection.dart' as collection;
 import 'package:pocketbase/pocketbase.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
 import 'package:http/http.dart' as http;
+import 'package:sqflite/sqlite_api.dart' as sqflite_api;
 
-part './chat.dart';
-part './chat_starter.dart';
-part './chat_message.dart';
-part './chat_submission.dart';
-part './chat_data.dart';
-part './chatbot.dart';
+part 'entry.dart';
+part 'topic.dart';
+part 'message.dart';
+part 'entry_submission.dart';
+part 'entries_data.dart';
+part 'chatbot.dart';

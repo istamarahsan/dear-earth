@@ -1,4 +1,4 @@
-DROP TABLE chat_message;
-DROP TABLE chat_submission;
-DROP TABLE chat;
-DROP TABLE chat_starter;
+DROP TABLE IF EXISTS `journal_entry_submission`;
+DROP TABLE IF EXISTS `journal_entry_message`;
+DROP TABLE IF EXISTS `journal_entry`;
+DROP TABLE IF EXISTS `journal_topic`;
